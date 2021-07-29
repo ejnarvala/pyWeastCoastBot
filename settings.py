@@ -7,6 +7,8 @@ def get(key):
     return os.environ.get(key)
 
 def parse_boolean(text):
+    if not text:
+        return False
     return text.lower() == "true"
 
 BOT_TOKEN = get("BOT_TOKEN")
