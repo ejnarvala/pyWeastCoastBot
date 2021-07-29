@@ -9,4 +9,4 @@ def index():
 
 
 def run():
-    app.run(debug=settings.FLASK_DEBUG, host='0.0.0.0', port=5000)
+    app.run(debug=settings.FLASK_DEBUG, host='0.0.0.0', port=settings.FLASK_PORT)

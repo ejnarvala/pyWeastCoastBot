@@ -14,3 +14,4 @@ def parse_boolean(text):
 BOT_TOKEN = get("BOT_TOKEN")
 OMDB_API_SECRET = get("OMDB_API_SECRET")
 FLASK_DEBUG = parse_boolean(get("FLASK_DEBUG"))
+FLASK_PORT = get("PORT") or "5000"
