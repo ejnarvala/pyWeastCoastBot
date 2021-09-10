@@ -8,6 +8,9 @@ import logging
 
 bot = Bot(command_prefix="/")
 
+def run():
+    bot.run(settings.BOT_TOKEN)
+
 def run_async():
     loop = asyncio.get_event_loop()
     loop.create_task(bot.start(settings.BOT_TOKEN))
