@@ -19,7 +19,6 @@ def run_async():
 @bot.event
 async def on_ready():
     logging.info(f"I am {bot.user.name} (logger)")
-    print(f"I am {bot.user.name}")
 
     for file in os.listdir("cogs"):
         if file.endswith(".py"):
