@@ -28,8 +28,7 @@ class OmdbClient(object):
     def find_by_title(cls, title_search_text) -> ImdbFilm:
         params = dict(t=title_search_text)
         response_json = cls._request(params=params)
-        print(response_json)
-        return ImdbFilm(response_json)
+        return ImdbFilm.from_json(response_json)
 
 
 class OmdbError(Exception):

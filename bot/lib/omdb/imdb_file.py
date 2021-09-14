@@ -16,7 +16,7 @@ class ImdbFilm(object):
     image_url = attr.ib()
 
     @property
-    def image_url(self):
+    def imdb_url(self):
         return f"https://www.imdb.com/title/{self.imdb_id}"
 
     @staticmethod

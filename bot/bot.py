@@ -6,7 +6,7 @@ from discord.ext.commands import Bot
 import settings
 import logging
 
-bot = Bot(command_prefix="?")
+bot = Bot(command_prefix="//")
 
 def run():
     bot.run(settings.BOT_TOKEN)
