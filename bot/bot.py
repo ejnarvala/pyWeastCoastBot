@@ -6,7 +6,7 @@ from discord.ext.commands import Bot
 import settings
 import logging
 
-bot = Bot(command_prefix="/")
+bot = Bot(command_prefix="?")
 
 def run():
     bot.run(settings.BOT_TOKEN)
@@ -25,3 +25,8 @@ async def on_ready():
         if file.endswith(".py"):
             name = file[:-3]
             bot.load_extension(f"cogs.{name}")
+
+logging.basicConfig(level=logging.INFO)
+
+if __name__ == '__main__':
+    run()

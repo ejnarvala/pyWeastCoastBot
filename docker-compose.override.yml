@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  bot:
+    env_file: ./bot/.env
+    environment: 
+      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
+    command: watchmedo auto-restart -R --debug-force-polling -p "*.py" python3 bot.py
+    volumes:
+      - ./bot/:/app
+    depends_on: 
+      - migration
+      - db
+  db:
+    image: postgres:13.4
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    expose: 
+      - "5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  migration:
+    environment: 
+      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
+    build: ./bot
+    command: bash -c "python3 manage.py makemigrations db && python3 manage.py migrate"
+    volumes:
+      - ./bot/:/app
+    depends_on:
+      - db
+volumes:
+  postgres:

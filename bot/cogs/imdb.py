@@ -10,6 +10,7 @@ class IMDB(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+
     @commands.command()
     async def imdb(self, ctx, *, title_search_text):
         film = self.omdb_client.find_by_title(title_search_text)

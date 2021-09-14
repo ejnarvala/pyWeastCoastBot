@@ -1,0 +1,10 @@
+setup:
+  addons:
+    - plan: heroku-postgresql
+build:
+  docker:
+    worker: bot/Dockerfile
+release:
+  image: worker
+  command:
+    - python3 manage.py makemigrations db && python3 manage.py migrate
