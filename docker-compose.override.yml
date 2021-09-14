@@ -25,7 +25,7 @@ services:
     environment: 
       DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
     build: ./bot
-    command: bash -c "python3 manage.py makemigrations db && python3 manage.py migrate"
+    command: bash -c "./bin/wait-for-it.sh db:5432 && python3 manage.py makemigrations db && python3 manage.py migrate db"
     volumes:
       - ./bot/:/app
     depends_on:

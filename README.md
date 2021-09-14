@@ -20,3 +20,11 @@ This project is the python version of WeastCoastBot because my friends are picky
    * the parameters for this method will first be the discord context followed by command parameters
 
 More info here - [Discord Cogs](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html)
+
+### Troubleshooting
+
+try a fresh build with
+```
+docker-compose down -v
+docker-compose up --build
+```

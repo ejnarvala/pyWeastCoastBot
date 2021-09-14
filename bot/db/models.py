@@ -1,9 +1,8 @@
 from django.db import models
 
-
-# Sample User model
-# class User(models.Model):
-#     name = models.CharField(max_length=50, default="Dan")
-
-#     def __str__(self):
-#         return self.name
+class Reminder(models.Model):
+    user_id = models.TextField()
+    channel_id = models.TextField()
+    message_id = models.TextField()
+    message = models.TextField()
+    remind_time = models.DateTimeField()
