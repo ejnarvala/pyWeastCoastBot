@@ -30,16 +30,11 @@ class Reminders(commands.Cog):
                 discord_message = None
                 try:
                     discord_message = await channel.fetch_message(reminder.message_id)
+                    response = f"> {reminder.message}" if response.message else "Here's your reminder! :alarm_clock:"
+                    await discord_message.reply(response)
                 except Exception as e:
                     logging.error(f"Could not get message {reminder.message_id}: {e}")
                 
-                if discord_message:
-                    await discord_message.reply(f"> {reminder.message}")
-                else:
-                    response = f"Hey <@{reminder.user_id}>, just reminding you about your reminder set for {self.format_remind_time(reminder.remind_time)}"
-                    if reminder.message:
-                        response += f"\n> {reminder.message}"
-                    await channel.send(response)
                 reminder.delete()
                 logging.info(f"Reminder Deleted: {reminder}")
         except Exception as e:
@@ -49,7 +44,7 @@ class Reminders(commands.Cog):
     async def before_poll(self):
         await self.bot.wait_until_ready()
 
-    @commands.command(brief="Set reminders", usage="//remindme <time> [, message]")
+    @commands.command(brief="Set reminders", usage="<time> [, message]")
     async def remindme(self, ctx, *args):
         if not args:
             return
