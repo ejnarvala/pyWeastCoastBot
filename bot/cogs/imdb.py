@@ -13,7 +13,7 @@ class IMDB(commands.Cog):
         self.bot = bot
 
 
-    @commands.command()
+    @commands.command(brief="Search IMDB by film title")
     async def imdb(self, ctx, *, title_search_text):
         film = self.omdb_client.find_by_title(title_search_text)
         logging.info(f"Found IMDB entry for search '{title_search_text}': {film}")

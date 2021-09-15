@@ -8,7 +8,7 @@ class Wiki(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    @commands.command()
+    @commands.command(brief="Search for wikipedia links")
     async def wiki(self, ctx, *, search_text):
         link = self.search_wiki_articles(search_text)
         message = link or f"Sorry, couldn't find article for '{search_text}'"
