@@ -52,7 +52,10 @@ class Reminders(commands.Cog):
     @commands.command(
         brief="Set reminders",
         usage="<time> [, message]",
-        help="Times are stored in UTC, specify timezone if you are inputting a specific date/time string e.g. '9/15/21 3:00 PM EST'. Reminders are polled for every 30s",
+        help="Times are stored in UTC, specify timezone "
+             "if you are inputting a specific date/time string "
+             "e.g. '9/15/21 3:00 PM EST'. Reminders are polled "
+             "for every 30s. Deleting a remindme command will remove the reminder.",
         description="Set reminders")
     async def remindme(self, ctx, *args):
         if not args:
