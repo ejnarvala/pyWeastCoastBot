@@ -30,7 +30,7 @@ class Reminders(commands.Cog):
                 discord_message = None
                 try:
                     discord_message = await channel.fetch_message(reminder.message_id)
-                    response = f"> {reminder.message}" if response.message else "Here's your reminder! :alarm_clock:"
+                    response = f"> {reminder.message}" if reminder.message else "Here's your reminder! :alarm_clock:"
                     await discord_message.reply(response)
                 except Exception as e:
                     logging.error(f"Could not get message {reminder.message_id}: {e}")
