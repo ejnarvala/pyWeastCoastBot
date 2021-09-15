@@ -1,10 +1,11 @@
 import logging
-from datetime import datetime
 
+from django.core.exceptions import ValidationError
 from discord.ext import commands, tasks
+from humanize import naturaltime
 
 from db.models import Reminder
-from lib.utils.time import parse_datetime
+from lib.utils.time import parse_utc_datetime, utc_now
 
 
 class Reminders(commands.Cog):
@@ -18,22 +19,26 @@ class Reminders(commands.Cog):
 
     @staticmethod
     def format_remind_time(remind_time):
-        return remind_time.strftime('%m/%d/%Y %H:%M:%S')
+        return naturaltime(
+            remind_time,
+            future=True,
+            minimum_unit='seconds',
+            when=utc_now()
+        )
 
     @tasks.loop(seconds=30)
     async def poll_for_reminder(self):
         try:
-            reminders = Reminder.objects.filter(remind_time__lte=datetime.now())
+            reminders = Reminder.objects.filter(remind_time__lte=utc_now())
             for reminder in reminders:
                 logging.info(f"Handling reminder {reminder}")
-                channel = await self.bot.fetch_channel(reminder.channel_id)
-                discord_message = None
                 try:
+                    channel = await self.bot.fetch_channel(reminder.channel_id)
                     discord_message = await channel.fetch_message(reminder.message_id)
-                    response = f"> {reminder.message}" if reminder.message else "Here's your reminder! :alarm_clock:"
+                    response = f"> {reminder.message}" if reminder.message else ":alarm_clock: Here's your reminder!"
                     await discord_message.reply(response)
                 except Exception as e:
-                    logging.error(f"Could not get message {reminder.message_id}: {e}")
+                    logging.error(f"Error handling reminder: {e}")
                 
                 reminder.delete()
                 logging.info(f"Reminder Deleted: {reminder}")
@@ -44,13 +49,20 @@ class Reminders(commands.Cog):
     async def before_poll(self):
         await self.bot.wait_until_ready()
 
-    @commands.command(brief="Set reminders", usage="<time> [, message]")
+    @commands.command(
+        brief="Set reminders",
+        usage="<time> [, message]",
+        help="Times are stored in UTC, specify timezone if you are inputting a specific date/time string e.g. '9/15/21 3:00 PM EST'. Reminders are polled for every 30s",
+        description="Set reminders")
     async def remindme(self, ctx, *args):
         if not args:
             return
         command = " ".join(args).split(",")
         
-        reminder_datetime = parse_datetime(command[0])
+        reminder_datetime = parse_utc_datetime(command[0])
+        if reminder_datetime < utc_now():
+            raise Exception("Parsed time is in the past")
+        
         message = command[1] if len(command) > 1 else None
 
         reminder = Reminder.objects.create(
