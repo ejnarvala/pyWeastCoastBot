@@ -3,10 +3,11 @@ import requests
 import settings
 from lib.omdb.imdb_file import ImdbFilm
 
+
 class OmdbClient(object):
 
     api_key = settings.OMDB_API_SECRET
-    base_url = f"http://www.omdbapi.com"
+    base_url = "http://www.omdbapi.com"
 
     @classmethod
     def _request(cls, path="", params=dict(), method="GET", **kwargs) -> Dict:
@@ -19,9 +20,9 @@ class OmdbClient(object):
         response.raise_for_status()
 
         response_json = response.json()
-        if response_json['Response'] == "False":
+        if response_json["Response"] == "False":
             raise OmdbError(response_json["Error"])
-            
+
         return response_json
 
     @classmethod

@@ -8,8 +8,10 @@ import logging
 
 bot = Bot(command_prefix="//")
 
+
 def run():
     bot.run(settings.BOT_TOKEN)
+
 
 @bot.event
 async def on_ready():
@@ -20,11 +22,12 @@ async def on_ready():
             name = file[:-3]
             bot.load_extension(f"cogs.{name}")
 
+
 logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
+    format="%(asctime)s %(levelname)-8s %(message)s",
     level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S'
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

@@ -5,13 +5,13 @@ from discord.ext import commands
 from discord import Embed
 from lib.omdb.client import OmdbClient, OmdbError
 
+
 class IMDB(commands.Cog):
 
     omdb_client = OmdbClient()
 
     def __init__(self, bot):
         self.bot = bot
-
 
     @commands.command(brief="Search IMDB by film title")
     async def imdb(self, ctx, *, title_search_text):
@@ -27,11 +27,7 @@ class IMDB(commands.Cog):
 
     @staticmethod
     def embed_from_film(film: ImdbFilm) -> Embed:
-        embed = Embed(
-            title=film.title,
-            url=film.imdb_url,
-            description=film.plot
-        )
+        embed = Embed(title=film.title, url=film.imdb_url, description=film.plot)
         embed.set_image(url=film.image_url)
         embed.add_field(name="Released", value=film.released, inline=True)
         embed.add_field(name="Genre", value=film.genre, inline=True)
@@ -42,6 +38,7 @@ class IMDB(commands.Cog):
         embed.add_field(name="ID", value=film.imdb_id, inline=True)
         embed.add_field(name="Rating", value=film.rating, inline=True)
         return embed
+
 
 def setup(bot):
     bot.add_cog(IMDB(bot))
