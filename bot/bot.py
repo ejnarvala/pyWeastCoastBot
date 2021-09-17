@@ -9,7 +9,7 @@ import logging
 bot = Bot(command_prefix="//")
 
 
-def run/jkj():
+def run():
     bot.run(settings.BOT_TOKEN)
 
 
