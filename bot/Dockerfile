@@ -10,4 +10,4 @@ COPY . .
 ENV DJANGO_SETTINGS_MODULE=settings
 ENV DJANGO_ALLOW_ASYNC_UNSAFE=true
 
-CMD [ "python3", "bot.py" ]
+CMD [ "python", "bot.py" ]

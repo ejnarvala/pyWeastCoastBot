@@ -1,5 +1,6 @@
 import attr
 
+
 @attr.s
 class ImdbFilm(object):
 
@@ -22,15 +23,15 @@ class ImdbFilm(object):
     @staticmethod
     def from_json(json_resp):
         return ImdbFilm(
-            title = json_resp['Title'],
-            released = json_resp['Released'],
-            genre = json_resp['Genre'],
-            director = json_resp['Director'],
-            actors = json_resp['Actors'],
-            writer = json_resp['Writer'],
-            runtime = json_resp['Runtime'],
-            imdb_id = json_resp['imdbID'],
-            rating = json_resp['imdbRating'],
-            plot = json_resp['Plot'],
-            image_url = json_resp['Poster'],
+            title=json_resp["Title"],
+            released=json_resp["Released"],
+            genre=json_resp["Genre"],
+            director=json_resp["Director"],
+            actors=json_resp["Actors"],
+            writer=json_resp["Writer"],
+            runtime=json_resp["Runtime"],
+            imdb_id=json_resp["imdbID"],
+            rating=json_resp["imdbRating"],
+            plot=json_resp["Plot"],
+            image_url=json_resp["Poster"],
         )
