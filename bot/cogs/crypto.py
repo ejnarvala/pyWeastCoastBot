@@ -7,9 +7,8 @@ from lib.utils.errors import NotFound
 
 client = CoinGeckoClient()
 
+
 class Crypto(commands.Cog):
-
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -24,7 +23,7 @@ class Crypto(commands.Cog):
         price_chart = client.get_coin_price_graph_image(coin_id)
         response = CryptoCoinResponse(coin=coin, price_chart=price_chart)
         await ctx.send(embed=response.to_embed(), file=response.price_chart_file)
-        
+
     @crypto.error
     async def crypto_error(self, ctx, error):
         logging.error(f"Crypto Error: {error}")
@@ -32,7 +31,6 @@ class Crypto(commands.Cog):
             await ctx.reply("Could not find coin")
         else:
             await ctx.reply(f"Crypto Error: {error.original}")
-
 
 
 @attr.s
@@ -47,7 +45,7 @@ class CryptoCoinResponse:
         if value < 0:
             result = f"-{result}"
         return result
-   
+
     @staticmethod
     def _format_percent(value):
         return f"{value:.2f}%"
@@ -60,13 +58,33 @@ class CryptoCoinResponse:
         embed = Embed(title=self.coin.name, url=self.coin.home_page_url)
         embed.set_image(url="attachment://image.png")
         embed.set_thumbnail(url=self.coin.symbol_image_url)
-        embed.add_field(name="Price", value=self._format_money(self.coin.market_data.current_price), inline=True)
-        embed.add_field(name="Percent Change", value=self._format_percent(self.coin.market_data.price_change_percentage_24h), inline=True)
-        embed.add_field(name="Absolute Change", value=self._format_money(self.coin.market_data.price_change_24h), inline=True)
-        embed.add_field(name="24 Hour High", value=self._format_money(self.coin.market_data.price_high_24h), inline=True)
-        embed.add_field(name="24 Hour Low", value=self._format_money(self.coin.market_data.price_low_24h), inline=True)
+        embed.add_field(
+            name="Price", value=self._format_money(self.coin.market_data.current_price), inline=True
+        )
+        embed.add_field(
+            name="Percent Change",
+            value=self._format_percent(self.coin.market_data.price_change_percentage_24h),
+            inline=True,
+        )
+        embed.add_field(
+            name="Absolute Change",
+            value=self._format_money(self.coin.market_data.price_change_24h),
+            inline=True,
+        )
+        embed.add_field(
+            name="24 Hour High",
+            value=self._format_money(self.coin.market_data.price_high_24h),
+            inline=True,
+        )
+        embed.add_field(
+            name="24 Hour Low",
+            value=self._format_money(self.coin.market_data.price_low_24h),
+            inline=True,
+        )
         embed.add_field(name="Volume", value=self.coin.market_data.total_volume, inline=True)
-        embed.add_field(name="Market Cap Rank", value=self.coin.market_data.market_cap_rank, inline=True)
+        embed.add_field(
+            name="Market Cap Rank", value=self.coin.market_data.market_cap_rank, inline=True
+        )
         return embed
 
 

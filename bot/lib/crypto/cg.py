@@ -37,7 +37,7 @@ class CoinGeckoClient:
             return self.coin_id_by_symbol[search]
         raise NotFound("Could not find coin by name or symbol")
 
-    def get_coin_market_data(self, coin_id, **params):
+    def get_coin_market_data(self, coin_id):
         params = dict(
             localization=False,
             tickers=False,
