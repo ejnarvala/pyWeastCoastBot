@@ -1,9 +1,8 @@
 import os
-import asyncio
 import django
+from django.conf import settings
 from discord.ext.commands import Bot
 
-import settings
 import logging
 
 bot = Bot(command_prefix="//")
