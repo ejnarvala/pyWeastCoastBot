@@ -19,9 +19,9 @@ class Stonk(commands.Cog):
     @commands.command(
         brief="Look up a stock",
         usage="<ticker>\n<period=1d [1d, 5d, 1mo, 3mo, 6mo, "
-                "1y, 2y, 5y, 10y, ytd, max]>\n<interval=30m "
-                "[1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, "
-                "1wk, 1mo, 3mo]>",
+        "1y, 2y, 5y, 10y, ytd, max]>\n<interval=30m "
+        "[1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, "
+        "1wk, 1mo, 3mo]>",
         description="Stock price summary for a given period",
     )
     async def stonk(
