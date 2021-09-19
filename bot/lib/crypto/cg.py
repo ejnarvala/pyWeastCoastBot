@@ -1,4 +1,3 @@
-import logging
 import tempfile
 from datetime import datetime
 from functools import cached_property
@@ -60,7 +59,6 @@ class CoinGeckoClient:
         df["time"] = [
             datetime.utcfromtimestamp(ts / 1000).strftime("%Y-%m-%d %H:%M:%S") for ts in df["time"]
         ]
-        logging.info(df)
         return df
 
     def get_coin_price_graph_image(self, coin_id):
