@@ -1,4 +1,5 @@
 from typing import Dict
+
 import requests
 import settings
 from lib.omdb.imdb_file import ImdbFilm

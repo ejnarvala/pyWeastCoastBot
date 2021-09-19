@@ -1,9 +1,12 @@
-import attr
 import logging
+
+import attr
+from discord import Embed, File, Colour
 from discord.ext import commands
-from discord import Embed, File
 from lib.crypto.cg import CoinGeckoClient
+from lib.utils.consts import HexColors
 from lib.utils.errors import NotFound
+from lib.utils.string import format_percent, format_money
 
 client = CoinGeckoClient()
 
@@ -39,46 +42,39 @@ class CryptoCoinResponse:
     coin = attr.ib()
     price_chart = attr.ib()
 
-    @staticmethod
-    def _format_money(value):
-        result = f"${abs(value):,.2f}"
-        if value < 0:
-            result = f"-{result}"
-        return result
-
-    @staticmethod
-    def _format_percent(value):
-        return f"{value:.2f}%"
-
     @property
     def price_chart_file(self):
         return File(self.price_chart, filename="image.png")
 
+    @property
+    def _color(self):
+        return Colour.green() if self.coin.market_data.price_change_24h > 0 else Colour.red()
+
     def to_embed(self):
-        embed = Embed(title=self.coin.name, url=self.coin.home_page_url)
+        embed = Embed(title=self.coin.name, url=self.coin.home_page_url, color=self._color)
         embed.set_image(url="attachment://image.png")
         embed.set_thumbnail(url=self.coin.symbol_image_url)
         embed.add_field(
-            name="Price", value=self._format_money(self.coin.market_data.current_price), inline=True
+            name="Price", value=format_money(self.coin.market_data.current_price), inline=True
         )
         embed.add_field(
             name="Percent Change",
-            value=self._format_percent(self.coin.market_data.price_change_percentage_24h),
+            value=format_percent(self.coin.market_data.price_change_percentage_24h),
             inline=True,
         )
         embed.add_field(
             name="Absolute Change",
-            value=self._format_money(self.coin.market_data.price_change_24h),
+            value=format_money(self.coin.market_data.price_change_24h),
             inline=True,
         )
         embed.add_field(
             name="24 Hour High",
-            value=self._format_money(self.coin.market_data.price_high_24h),
+            value=format_money(self.coin.market_data.price_high_24h),
             inline=True,
         )
         embed.add_field(
             name="24 Hour Low",
-            value=self._format_money(self.coin.market_data.price_low_24h),
+            value=format_money(self.coin.market_data.price_low_24h),
             inline=True,
         )
         embed.add_field(name="Volume", value=self.coin.market_data.total_volume, inline=True)
