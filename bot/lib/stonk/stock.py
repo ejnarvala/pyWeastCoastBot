@@ -2,6 +2,7 @@ import attr
 from lib.utils.consts import STONKMAN_DOWN_URL, STONKMAN_UP_URL
 from lib.utils.math import get_percent_change
 
+
 @attr.s
 class Stock:
 

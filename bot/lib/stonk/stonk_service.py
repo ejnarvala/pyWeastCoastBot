@@ -10,6 +10,7 @@ from lib.utils.consts import HexColors
 from lib.utils.errors import NotFound
 from lib.stonk.stock import Stock
 
+
 class StonkService:
     @classmethod
     @lru_cache
