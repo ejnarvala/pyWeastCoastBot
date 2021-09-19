@@ -1,10 +1,11 @@
 import logging
-
+import attr
 from discord import Colour, Embed, File
 from discord.ext import commands
 from lib.stonk.stonk_intervals import StonkIntervals
 from lib.stonk.stonk_periods import StonkPeriods
 from lib.stonk.stonk_service import StonkService
+from lib.utils.consts import STONKMAN_DOWN_URL, STONKMAN_UP_URL
 from lib.utils.errors import NotFound
 from lib.utils.string import format_money, format_percent
 from lib.utils.time import is_same_day
@@ -18,18 +19,16 @@ class Stonk(commands.Cog):
 
     @commands.command(
         brief="Look up a stock",
-        usage="<ticker>\n<period=1d [1d, 5d, 1mo, 3mo, 6mo, "
-        "1y, 2y, 5y, 10y, ytd, max]>\n<interval=30m "
-        "[1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, "
-        "1wk, 1mo, 3mo]>",
+        usage=f"<ticker>\n<period=1d [{', '.join([p.value for p in StonkPeriods])}]>"
+              f"\n<interval=30m [{', '.join([i.value for i in StonkIntervals])}]",
         description="Stock price summary for a given period",
     )
     async def stonk(
-        self, ctx, ticker, period=StonkPeriods.one_day, interval=StonkIntervals.thirty_minute
+        self, ctx, ticker, period=StonkPeriods.one_day, interval=StonkIntervals.fifteen_minute
     ):
-        stock = service.get_stock_data(ticker, period, interval)
-        price_chart_image = service.get_price_graph_image(ticker, period, interval)
-        response = StonkResponse(stock, price_chart_image)
+        stock_info = service.get_stock_info(ticker)
+        stock_history = service.get_stock_history(ticker, period, interval)
+        response = StonkResponse(stock_info, stock_history)
 
         await ctx.send(embed=response.to_embed(), file=response.price_chart_file)
 
@@ -39,63 +38,86 @@ class Stonk(commands.Cog):
         if isinstance(error.original, NotFound):
             await ctx.reply("Could not find stonk")
         else:
-            await ctx.send(f"Crypto Error: {error.original}")
+            await ctx.send(f"Stonk Error: {error.original}")
 
-
+@attr.s
 class StonkResponse:
-    def __init__(self, stock, price_chart_image):
-        self.stock = stock
-        self.price_chart_image = price_chart_image
+
+    stock_info = attr.ib()
+    stock_history = attr.ib()
 
     @property
     def price_chart_file(self):
-        return File(self.price_chart_image, filename="image.png")
+        return File(self.stock_history.price_graph_image, filename="image.png")
 
     @property
     def _dates(self):
-        if is_same_day(self.stock.start_date, self.stock.end_date):
-            return f"{self.stock.start_date:%Y-%m-%d, %I:%M %p} - {self.stock.end_date:%I:%M %p}"
-        return f"{self.stock.start_date:%Y-%m-%d, %H:%M} - {self.stock.end_date:%Y-%m-%d, %H:%M}"
+        start = self.stock_history.start_date
+        end = self.stock_history.end_date
+        if is_same_day(start, end):
+            return f"{start:%Y-%m-%d, %I:%M %p} - {end:%I:%M %p}"
+        return f"{start:%Y-%m-%d, %H:%M} - {end:%Y-%m-%d, %H:%M}"
 
     @property
-    def _color(self):
-        return Colour.green() if self.stock.market_change > 0 else Colour.red()
+    def _market_price(self):
+        return format_money(self.stock_info.price_current)
+
+    @property
+    def _market_change(self):
+        return format_money(self.stock_history.market_change)
+
+    @property
+    def _market_change_percentage(self):
+        return format_percent(self.stock_history.market_change_percentage)
+
+    @property
+    def _low(self):
+        return format_money(self.stock_history.low)
+
+    @property
+    def _high(self):
+        return format_money(self.stock_history.high)
 
     @property
     def _title(self):
-        return f"{self.stock.name} - ${self.stock.symbol}"
+        return f"{self.stock_info.name} - ${self.stock_info.symbol}"
+
+    @property
+    def _url(self):
+        return f"https://finance.yahoo.com/quote/{self.stock_info.symbol}"
+
+    @property
+    def _description(self):
+        return self.stock_info.industry
+
+    @property
+    def _color(self):
+        if self.stock_history.market_change < 0:
+            return Colour.red()
+        else:
+            return Colour.green()
+
+    @property
+    def _thumbnail(self):
+        if self.stock_history.market_change < 0:
+            return STONKMAN_DOWN_URL
+        else:
+            return STONKMAN_UP_URL
 
     def to_embed(self):
         embed = Embed(
             title=self._title,
-            url=self.stock.yf_link,
-            description=self.stock.sector,
+            url=self._url,
+            description=self._description,
             color=self._color,
         )
         embed.set_image(url="attachment://image.png")
-        embed.set_thumbnail(url=self.stock.stonkman_image_url)
-        embed.add_field(
-            name="Market Price", value=format_money(self.stock.current_price), inline=False
-        )
-        embed.add_field(
-            name="Last Day Low",
-            value=format_money(self.stock.low_last_trade_day),
-            inline=True,
-        )
-        embed.add_field(
-            name="Last Day High",
-            value=format_money(self.stock.high_last_trade_day),
-            inline=True,
-        )
-        embed.add_field(
-            name="Market Change", value=format_money(self.stock.market_change), inline=False
-        )
-        embed.add_field(
-            name="Percent Market Change",
-            value=format_percent(self.stock.market_change_percentage),
-            inline=False,
-        )
-
+        embed.set_thumbnail(url=self._thumbnail)
+        embed.add_field(name="Market Price", value=self._market_price, inline=False)
+        embed.add_field(name="Low", value=self._low, inline=True)
+        embed.add_field(name="High", value=self._high, inline=True)
+        embed.add_field(name="Market Change", value=self._market_change, inline=False)
+        embed.add_field(name="Percent Market Change", value=self._market_change_percentage,inline=False)
         embed.add_field(name="When", value=self._dates, inline=False)
 
         return embed

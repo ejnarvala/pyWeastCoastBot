@@ -5,7 +5,7 @@ from discord.ext.commands import Bot
 
 import logging
 
-bot = Bot(command_prefix="/")
+bot = Bot(command_prefix=settings.COMMAND_PREFIX_OVERRIDE or "/")
 
 
 def run():

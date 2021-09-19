@@ -1,4 +1,6 @@
-class StonkIntervals:
+from enum import Enum
+
+class StonkIntervals(Enum):
     one_minute = "1m"
     two_minute = "2m"
     five_minute = "5m"

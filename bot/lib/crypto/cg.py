@@ -1,12 +1,10 @@
-import tempfile
 from datetime import datetime
 from functools import cached_property
 
 import pandas as pd
-import plotly.express as px
-from lib.utils.consts import HexColors
 from lib.crypto.coin import Coin
 from lib.utils.errors import NotFound
+from lib.utils.graph import generate_line_plot_image
 from pycoingecko import CoinGeckoAPI
 
 cg = CoinGeckoAPI()
@@ -52,26 +50,11 @@ class CoinGeckoClient:
         coin_data = cg.get_coin_by_id(coin_id, **params)
         return Coin.from_cg_coin_data(coin_data)
 
-    def get_coin_price_df(self, coin_id, days=1, currency="usd"):
-        params = dict(vs_currency=currency, days=days)
+    def get_coin_price_graph_image(self, coin_id):
+        params = dict(vs_currency='usd', days=1)
         chart_data = cg.get_coin_market_chart_by_id(coin_id, **params)
         df = pd.DataFrame(chart_data["prices"], columns=["time", "price"])
         df["time"] = [
             datetime.utcfromtimestamp(ts / 1000).strftime("%Y-%m-%d %H:%M:%S") for ts in df["time"]
         ]
-        return df
-
-    def get_coin_price_graph_image(self, coin_id):
-        df = self.get_coin_price_df(coin_id)
-        fig = px.line(df, x="time", y="price", labels=dict(time="Time", price="Price (USD)"))
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color=HexColors.WHITE, size=16),
-        )
-        fig.update_traces(line=dict(width=3))
-        img_bytes = fig.to_image(format="png")
-        file = tempfile.TemporaryFile()
-        file.write(img_bytes)
-        file.seek(0)
-        return file
+        return generate_line_plot_image(df, x="time", y="price", labels=dict(time="Time", price="Price (USD)"))

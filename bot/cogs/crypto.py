@@ -1,12 +1,12 @@
 import logging
 
 import attr
-from discord import Embed, File, Colour
+from discord import Colour, Embed, File
 from discord.ext import commands
 from lib.crypto.cg import CoinGeckoClient
 from lib.utils.consts import HexColors
 from lib.utils.errors import NotFound
-from lib.utils.string import format_percent, format_money
+from lib.utils.string import format_money, format_percent
 
 client = CoinGeckoClient()
 
