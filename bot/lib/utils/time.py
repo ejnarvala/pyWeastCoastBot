@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
-from logging import error
-import dateparser
 import logging
+from datetime import datetime, timezone
+
+import dateparser
 
 
 def parse_utc_datetime(string_to_parse):
@@ -22,3 +22,7 @@ def parse_utc_datetime(string_to_parse):
 
 def utc_now():
     return datetime.now(timezone.utc)
+
+
+def is_same_day(first, second):
+    return first.day == second.day and first.month == second.month and first.year == second.year

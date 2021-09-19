@@ -1,5 +1,5 @@
-from discord.ext import commands
 import requests
+from discord.ext import commands
 
 
 class Wiki(commands.Cog):

@@ -1,9 +1,9 @@
 import logging
 
-from lib.omdb.imdb_file import ImdbFilm
-from discord.ext import commands
 from discord import Embed
+from discord.ext import commands
 from lib.omdb.client import OmdbClient, OmdbError
+from lib.omdb.imdb_file import ImdbFilm
 
 
 class IMDB(commands.Cog):

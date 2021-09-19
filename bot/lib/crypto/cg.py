@@ -1,11 +1,13 @@
 import tempfile
+from datetime import datetime
+from functools import cached_property
+
 import pandas as pd
 import plotly.express as px
-from datetime import datetime
-from pycoingecko import CoinGeckoAPI
-from functools import cache, cached_property
-from lib.utils.errors import NotFound
+from lib.utils.consts import HexColors
 from lib.crypto.coin import Coin
+from lib.utils.errors import NotFound
+from pycoingecko import CoinGeckoAPI
 
 cg = CoinGeckoAPI()
 # https://www.coingecko.com/en/api/documentation
@@ -65,7 +67,7 @@ class CoinGeckoClient:
         fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#FFF", size=16),
+            font=dict(color=HexColors.WHITE, size=16),
         )
         fig.update_traces(line=dict(width=3))
         img_bytes = fig.to_image(format="png")
