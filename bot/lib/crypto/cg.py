@@ -51,10 +51,12 @@ class CoinGeckoClient:
         return Coin.from_cg_coin_data(coin_data)
 
     def get_coin_price_graph_image(self, coin_id):
-        params = dict(vs_currency='usd', days=1)
+        params = dict(vs_currency="usd", days=1)
         chart_data = cg.get_coin_market_chart_by_id(coin_id, **params)
         df = pd.DataFrame(chart_data["prices"], columns=["time", "price"])
         df["time"] = [
             datetime.utcfromtimestamp(ts / 1000).strftime("%Y-%m-%d %H:%M:%S") for ts in df["time"]
         ]
-        return generate_line_plot_image(df, x="time", y="price", labels=dict(time="Time", price="Price (USD)"))
+        return generate_line_plot_image(
+            df, x="time", y="price", labels=dict(time="Time", price="Price (USD)")
+        )

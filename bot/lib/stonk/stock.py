@@ -19,7 +19,6 @@ class StockInfo:
     market_change = attr.ib()
     market_change_percentage = attr.ib()
 
-        
     @staticmethod
     def from_yf_ticker_info(ticker_info):
         symbol = ticker_info["symbol"]
@@ -42,6 +41,7 @@ class StockInfo:
             market_change_percentage=market_change_percentage,
         )
 
+
 @attr.s
 class StockHistory:
 
@@ -59,7 +59,9 @@ class StockHistory:
         price = (history["High"] + history["Low"]) / 2
         time = [f"{time:%Y-%m-%d %H:%M:%S}" for time in history.index.to_pydatetime()]
         df = pd.DataFrame(dict(price=price, time=time))
-        return generate_line_plot_image(df, x="time", y="price", labels=dict(time="Time", price="Price (USD)"))
+        return generate_line_plot_image(
+            df, x="time", y="price", labels=dict(time="Time", price="Price (USD)")
+        )
 
     @staticmethod
     def from_yf_ticker_history(history):
@@ -77,5 +79,5 @@ class StockHistory:
             market_change_percentage=market_change_percentage,
             start_date=first_entry.name.to_pydatetime(),
             end_date=last_entry.name.to_pydatetime(),
-            data=history
+            data=history,
         )

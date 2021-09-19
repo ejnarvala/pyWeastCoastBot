@@ -20,7 +20,7 @@ class Stonk(commands.Cog):
     @commands.command(
         brief="Look up a stock",
         usage=f"<ticker>\n<period=1d [{', '.join([p.value for p in StonkPeriods])}]>"
-              f"\n<interval=30m [{', '.join([i.value for i in StonkIntervals])}]",
+        f"\n<interval=30m [{', '.join([i.value for i in StonkIntervals])}]",
         description="Stock price summary for a given period",
     )
     async def stonk(
@@ -39,6 +39,7 @@ class Stonk(commands.Cog):
             await ctx.reply("Could not find stonk")
         else:
             await ctx.send(f"Stonk Error: {error.original}")
+
 
 @attr.s
 class StonkResponse:
@@ -117,7 +118,9 @@ class StonkResponse:
         embed.add_field(name="Low", value=self._low, inline=True)
         embed.add_field(name="High", value=self._high, inline=True)
         embed.add_field(name="Market Change", value=self._market_change, inline=False)
-        embed.add_field(name="Percent Market Change", value=self._market_change_percentage,inline=False)
+        embed.add_field(
+            name="Percent Market Change", value=self._market_change_percentage, inline=False
+        )
         embed.add_field(name="When", value=self._dates, inline=False)
 
         return embed

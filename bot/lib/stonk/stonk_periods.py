@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class StonkPeriods(Enum):
     one_day = "1d"
     five_day = "5d"
