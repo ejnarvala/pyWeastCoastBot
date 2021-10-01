@@ -16,7 +16,7 @@ def generate_line_plot_image(*args, **kwargs):
 
 
 def write_fig_to_tempfile(fig):
-    img_bytes = fig.to_image(format="png")
+    img_bytes = fig.to_image(format="svg")
     file = tempfile.TemporaryFile()
     file.write(img_bytes)
     file.seek(0)

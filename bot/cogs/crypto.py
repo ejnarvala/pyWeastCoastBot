@@ -44,7 +44,7 @@ class CryptoCoinResponse:
 
     @property
     def price_chart_file(self):
-        return File(self.price_chart, filename="image.png")
+        return File(self.price_chart, filename="image.svg")
 
     @property
     def _color(self):
@@ -52,7 +52,7 @@ class CryptoCoinResponse:
 
     def to_embed(self):
         embed = Embed(title=self.coin.name, url=self.coin.home_page_url, color=self._color)
-        embed.set_image(url="attachment://image.png")
+        embed.set_image(url="attachment://image.svg")
         embed.set_thumbnail(url=self.coin.symbol_image_url)
         embed.add_field(
             name="Price", value=format_money(self.coin.market_data.current_price), inline=True

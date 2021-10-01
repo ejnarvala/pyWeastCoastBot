@@ -49,7 +49,7 @@ class StonkResponse:
 
     @property
     def price_chart_file(self):
-        return File(self.stock_history.price_graph_image, filename="image.png")
+        return File(self.stock_history.price_graph_image, filename="image.svg")
 
     @property
     def _dates(self):
@@ -112,7 +112,7 @@ class StonkResponse:
             description=self._description,
             color=self._color,
         )
-        embed.set_image(url="attachment://image.png")
+        embed.set_image(url="attachment://image.svg")
         embed.set_thumbnail(url=self._thumbnail)
         embed.add_field(name="Market Price", value=self._market_price, inline=False)
         embed.add_field(name="Low", value=self._low, inline=True)
