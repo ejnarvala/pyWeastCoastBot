@@ -10,3 +10,16 @@ class Reminder(models.Model):
 
     def __str__(self) -> str:
         return f"Reminder({self.remind_time})"
+
+
+class ThirdPartyAuth(models.Model):
+    class Meta:
+        unique_together = [['user_id', 'provider', 'guild_id']]
+    user_id = models.TextField()
+    provider = models.TextField()
+    guild_id = models.TextField()
+    access_token = models.TextField()
+    refresh_token = models.TextField()
+    scope = models.TextField()
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
