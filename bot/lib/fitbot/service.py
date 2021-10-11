@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from functools import cached_property
 
@@ -36,8 +35,7 @@ class FitbotService:
     @classmethod
     def store_auth_token(cls, user_id, guild_id, code):
         token = cls.unauth_fitbit.client.fetch_access_token(code)
-        logging.info(f"TOKEN: {token}")
-        third_party_auth = ThirdPartyAuth.objects.create(
+        auth = ThirdPartyAuth.objects.create(
             user_id=user_id,
             provider=cls.config.provider,
             guild_id=guild_id,
@@ -46,7 +44,7 @@ class FitbotService:
             scope=','.join(token['scope']),
             expires_at=datetime.fromtimestamp(token['expires_at'])
         )
-        logging.info(f"AUTH RECORD: {third_party_auth}")
+        return auth
 
     @classmethod
     def disconnect_user(cls, user_id, guild_id):
