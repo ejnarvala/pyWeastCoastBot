@@ -4,7 +4,7 @@ import plotly.express as px
 from lib.utils.consts import HexColors
 
 
-def generate_line_plot_image(*args, **kwargs):
+def generate_line_plot(*args, **kwargs):
     fig = px.line(*args, **kwargs)
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
@@ -12,6 +12,11 @@ def generate_line_plot_image(*args, **kwargs):
         font=dict(color=HexColors.WHITE, size=16),
     )
     fig.update_traces(line=dict(width=3))
+    return fig
+
+
+def generate_line_plot_image(*args, **kwargs):
+    fig = generate_line_plot(*args, **kwargs)
     return write_fig_to_tempfile(fig)
 
 
