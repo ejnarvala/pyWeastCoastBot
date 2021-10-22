@@ -195,7 +195,7 @@ class UserWeeklyStats:
 
     @property
     def last_day_steps(self):
-        return self.steps[-1]
+        return self.steps[-2]
 
     @property
     def total_steps(self):
