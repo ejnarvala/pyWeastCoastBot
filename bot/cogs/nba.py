@@ -50,8 +50,8 @@ class NbaWinsPoolStandingsResponse:
     def description(self):
         leaderboard_df = self.guild_standings.leaderboard_df
 
-        leaderboard_df['name'] = leaderboard_df['owner'].map(self.user_id_map)
-        leaderboard_df = leaderboard_df[['rank', 'name', 'wins', 'losses']]
+        leaderboard_df["name"] = leaderboard_df["owner"].map(self.user_id_map)
+        leaderboard_df = leaderboard_df[["rank", "name", "wins", "losses"]]
         leaderboard_df = leaderboard_df.astype(str)
         ascii_table = table2ascii(
             header=leaderboard_df.columns.tolist(), body=leaderboard_df.values.tolist()
@@ -62,7 +62,7 @@ class NbaWinsPoolStandingsResponse:
     def wins_graph_file(self):
         race_plot_df = self.guild_standings.race_plot_df
         owners = [str(user_id) for user_id in self.user_id_map.keys()]
-        fig = generate_line_plot(race_plot_df, x=race_plot_df['date'], y=owners)
+        fig = generate_line_plot(race_plot_df, x=race_plot_df["date"], y=owners)
         fig.for_each_trace(lambda t: t.update(name=self.user_id_map.get(t.name, t.name)))
         fig.update_layout(xaxis_title="Date", yaxis_title="Wins", legend_title="Users")
         return File(write_fig_to_tempfile(fig), filename="image.png")

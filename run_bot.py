@@ -10,10 +10,12 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 bot = Bot(command_prefix=COMMAND_PREFIX_OVERRIDE or "/")
 
+
 def run():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pyWeastCoastBot.settings")
     django.setup()
     bot.run(BOT_TOKEN)
+
 
 @bot.event
 async def on_ready():
@@ -22,6 +24,7 @@ async def on_ready():
         if file.endswith(".py"):
             name = file[:-3]
             bot.load_extension(f"bot.cogs.{name}")
+
 
 # logging.basicConfig(
 #     format="%(asctime)s %(levelname)-8s %(message)s",

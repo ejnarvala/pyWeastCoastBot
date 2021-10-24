@@ -2,6 +2,7 @@ from datetime import datetime
 import attr
 from dateutil import parser
 
+
 def format_date(data):
     if isinstance(data, datetime):
         return data

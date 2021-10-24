@@ -21,7 +21,7 @@ class NbaWinsPoolService:
     def current_seasons_completed_games(cls):
         if cls._current_seasons_completed_games:
             return cls._current_seasons_completed_games
-        
+
         this_seasons_games = []
         games = cls.nba_repo.games(start_date=SEASON_START_DATE_2021)
         for game in games:
@@ -49,7 +49,7 @@ class NbaWinsPoolService:
         games_df = cls.gen_games_df(games, team_id_to_user_id)
 
         leaderboard_df = cls.build_leaderboard_df(games_df)
-        owners = leaderboard_df['owner'].tolist()
+        owners = leaderboard_df["owner"].tolist()
         race_plot_df = cls.build_race_plot_df(games_df, owners)
         # race_plot_df = generate_line_plot(
         #     wins_per_day_df, x=wins_per_day_df['date'], y=list(owners)
@@ -67,8 +67,7 @@ class NbaWinsPoolService:
         team_id_to_user_id = {user_team.bdl_team_id: user_team.user_id for user_team in user_teams}
 
         team_id_to_price = {
-            user_team.bdl_team_id: user_team.auction_price 
-            for user_team in user_teams
+            user_team.bdl_team_id: user_team.auction_price for user_team in user_teams
         }
 
         user_ids = set(user_team.user_id for user_team in user_teams)

@@ -4,6 +4,7 @@ import attr
 
 MAX_PER_PAGE = 100
 
+
 def _format_date(data):
     if not data:
         return
@@ -11,12 +12,14 @@ def _format_date(data):
         raise TypeError
     return data.strftime("%Y-%m-%d")
 
+
 def _format_list(data):
     if not data:
         return
     if not isinstance(data, list):
         raise TypeError
     return ",".join(data)
+
 
 @attr.s
 class BallDontLieParams:
