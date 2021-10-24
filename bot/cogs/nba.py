@@ -40,11 +40,9 @@ class Nba(commands.Cog):
         user_ids = set(team_breakdown_df.index.tolist())
         user_id_to_name = await self.get_user_names(user_ids)
         response = NbaWinsPoolTeamsResponse(
-            user_id_map=user_id_to_name,
-            team_breakdown_df=team_breakdown_df
+            user_id_map=user_id_to_name, team_breakdown_df=team_breakdown_df
         )
         await ctx.send(embed=response.to_embed())
-
 
     async def get_user_names(self, user_ids):
         user_id_to_username = {}
@@ -132,30 +130,23 @@ class NbaWinsPoolTeamsResponse:
         # does anyone know pandas?
         for user_id, user_name in self.user_id_map.items():
             teams = [
-                dict(
-                    name=row['full_name'],
-                    wins=row['wins'], 
-                    losses=row['losses']
-                )
+                dict(name=row["full_name"], wins=row["wins"], losses=row["losses"])
                 for _, row in df[df.index == str(user_id)].iterrows()
             ]
 
             team_string = table2ascii(
-                header = ["Name", "W/L"],
-                body = [
-                    [
-                        team["name"], 
-                        str(int(team["wins"])) + "-" + str(int(team["losses"]))
-                    ]
+                header=["Name", "W/L"],
+                body=[
+                    [team["name"], str(int(team["wins"])) + "-" + str(int(team["losses"]))]
                     for team in teams
-                ]
+                ],
             )
             team_string = f"```{team_string}```"
 
             fields.append((user_name, team_string, False))
 
         return fields
-        
+
     def to_embed(self):
         embed = Embed(
             title=self.title,
@@ -165,7 +156,6 @@ class NbaWinsPoolTeamsResponse:
         for name, value, inline in self.fields:
             embed.add_field(name=name, value=value, inline=inline)
         return embed
-
 
 
 def setup(bot):
