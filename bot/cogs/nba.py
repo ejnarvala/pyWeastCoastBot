@@ -11,16 +11,21 @@ from domain.nba.nba_wins_pool_service import NbaWinsPoolService
 service = NbaWinsPoolService()
 
 
+async def check_in_guild(ctx):
+    if not ctx.message.guild:
+        await ctx.reply("Command must be called within a server")
+        return False
+    return True
+
+
 class Nba(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
+    @commands.check(check_in_guild)
     async def nba_wins_pool(self, ctx):
         guild_id = ctx.message.guild.id
-        if not guild_id:
-            raise Exception("Message not from within a guild")
-
         guild_standings = service.guild_standings(guild_id)
         user_ids = list(guild_standings.leaderboard_df["owner"])
         user_id_to_name = await self.get_user_names(user_ids)
@@ -28,7 +33,19 @@ class Nba(commands.Cog):
             guild_standings=guild_standings, user_id_map=user_id_to_name
         )
 
-        await ctx.reply(embed=response.to_embed(), file=response.wins_graph_file)
+        await ctx.send(embed=response.to_embed(), file=response.wins_graph_file)
+
+    @commands.command()
+    @commands.check(check_in_guild)
+    async def nba_wins_pool_teams(self, ctx):
+        guild_id = ctx.message.guild.id
+        team_breakdown_df = service.guild_team_breakdown(guild_id)
+        user_ids = set(team_breakdown_df.index.tolist())
+        user_id_to_name = await self.get_user_names(user_ids)
+        response = NbaWinsPoolTeamsResponse(
+            user_id_map=user_id_to_name, team_breakdown_df=team_breakdown_df
+        )
+        await ctx.send(embed=response.to_embed())
 
     async def get_user_names(self, user_ids):
         user_id_to_username = {}
@@ -88,6 +105,59 @@ class NbaWinsPoolStandingsResponse:
             color=self.color,
         )
         embed.set_image(url="attachment://image.png")
+        return embed
+
+
+@attr.s
+class NbaWinsPoolTeamsResponse:
+
+    user_id_map = attr.ib()
+    team_breakdown_df = attr.ib()
+
+    @property
+    def url(self):
+        return NBA_WINS_POOL_SHEET_URL
+
+    @property
+    def color(self):
+        return Colour.orange()
+
+    @property
+    def title(self):
+        return "NBA Wins Pool Teams"
+
+    @property
+    def fields(self):
+        df = self.team_breakdown_df
+        fields = []
+        # does anyone know pandas?
+        for user_id, user_name in self.user_id_map.items():
+            teams = [
+                dict(name=row["full_name"], wins=row["wins"], losses=row["losses"])
+                for _, row in df[df.index == str(user_id)].iterrows()
+            ]
+
+            team_string = table2ascii(
+                header=["Name", "W/L"],
+                body=[
+                    [team["name"], str(int(team["wins"])) + "-" + str(int(team["losses"]))]
+                    for team in teams
+                ],
+            )
+            team_string = f"```{team_string}```"
+
+            fields.append((user_name, team_string, False))
+
+        return fields
+
+    def to_embed(self):
+        embed = Embed(
+            title=self.title,
+            url=self.url,
+            color=self.color,
+        )
+        for name, value, inline in self.fields:
+            embed.add_field(name=name, value=value, inline=inline)
         return embed
 
 
