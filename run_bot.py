@@ -25,5 +25,6 @@ async def on_ready():
             name = file[:-3]
             bot.load_extension(f"bot.cogs.{name}")
 
+
 if __name__ == "__main__":
     run()
