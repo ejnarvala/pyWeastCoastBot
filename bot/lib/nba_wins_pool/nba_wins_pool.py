@@ -52,13 +52,13 @@ def get_game_data(team_id_to_owner):
     data = r.json()
 
     total_pages = data["meta"]["total_pages"]
-    next_page = data["meta"]["next_page"]
+    # next_page = data["meta"]["next_page"]
 
     json_data = [data]
 
     for i in range(2, total_pages + 1):
         params["page"] = i
-        r = requests.get(nba_url, params=params)
+        r = requests.get(GAMES_URL, params=params)
         json_data.append(r.json())
 
     dfs = []

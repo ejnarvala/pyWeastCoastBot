@@ -47,7 +47,7 @@ class BallDontLieClient:
             page = self._request(path, params, **kwargs)
             for d in page["data"]:
                 yield d
-            has_more = page["next_page"] != None
+            has_more = page["next_page"] is not None
 
     def _has_next_page(page):
         if page["meta"]["next_page"]:
