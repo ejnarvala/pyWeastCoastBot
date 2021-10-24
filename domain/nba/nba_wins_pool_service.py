@@ -150,7 +150,7 @@ class NbaWinsPoolService:
             .sort_values(by=["wins", "losses"], ascending=[False, True], ignore_index=True)
         )
 
-        leaderboard_df["rank"] = leaderboard_df.index + 1
+        leaderboard_df["rank"] = leaderboard_df["wins"].rank(method='min', ascending=False)
 
         return leaderboard_df
 
