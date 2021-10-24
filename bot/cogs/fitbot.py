@@ -12,7 +12,6 @@ from lib.utils.types import hex_to_rgb
 
 
 class Fitbot(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
         self.unauth_fitbit = Fitbit(
@@ -25,14 +24,12 @@ class Fitbot(commands.Cog):
     @commands.command(description="Instructions to authorize fitbot")
     async def fitbot_auth(self, ctx):
         url = self.fitbot.auth_url()
-        description = (
-            f"""
+        description = f"""
                 1. Click on [this link]({url})
                 2. Check all permissions unless you potentially want to break stuff
                 3. Look at the url & copy the value for `code`
                 4. Call `/fitbot_register <code>`
             """
-        )
         embed = Embed(
             title="Fitbot Registration",
             url=url,
@@ -70,12 +67,16 @@ class Fitbot(commands.Cog):
 
     @commands.command(description="Get Fitbit stats")
     async def fitbot_leaderboard(self, ctx):
-        stats = self.fitbot.get_guild_weekly_stats(ctx.message.guild.id)
+        if not ctx.message.guild:
+            await ctx.reply("Command only works within a server")
+            return
+        guild_id = ctx.message.guild.id
+        stats = self.fitbot.get_guild_weekly_stats(guild_id)
         user_id_to_username = {}
         for user_id in stats.user_ids:
             user = await self.bot.fetch_user(int(user_id))
             if user and user.name:
-                user_id_to_username[user_id] = user.name
+                user_id_to_username[user_id] = user.display_name
         response = WeeklyLeaderboardResponse(stats, user_id_to_username)
         await ctx.send(embed=response.to_embed(), file=response.image_file)
 
@@ -86,7 +87,6 @@ class Fitbot(commands.Cog):
 
 
 class WeeklyLeaderboardResponse:
-
     def __init__(self, guild_stats: GuildWeeklyStats, user_id_map):
         self.guild_stats = guild_stats
         self.user_id_map = user_id_map
@@ -126,19 +126,11 @@ class WeeklyLeaderboardResponse:
         df = self.guild_stats.steps_df
         fig = generate_line_plot(df, x=df.index, y=list(df.columns))
         fig.for_each_trace(lambda t: t.update(name=self.user_id_map.get(t.name, t.name)))
-        fig.update_layout(
-            xaxis_title="Date",
-            yaxis_title="Steps",
-            legend_title="Users"
-        )
+        fig.update_layout(xaxis_title="Date", yaxis_title="Steps", legend_title="Users")
         return File(write_fig_to_tempfile(fig), filename="image.png")
 
     def to_embed(self):
-        embed = Embed(
-            title="Fitbit Leaderboard",
-            description=self.description,
-            color=self.color
-        )
+        embed = Embed(title="Fitbit Leaderboard", description=self.description, color=self.color)
         embed.set_thumbnail(url=self.thumbnail_image_url)
         embed.set_image(url="attachment://image.png")
         return embed

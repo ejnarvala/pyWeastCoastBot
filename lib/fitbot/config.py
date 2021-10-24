@@ -1,4 +1,4 @@
-from settings import FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET
+from pyWeastCoastBot.settings import FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET
 
 
 class FitbotConfig:
@@ -6,7 +6,7 @@ class FitbotConfig:
     client_id = FITBIT_CLIENT_ID
     client_secret = FITBIT_CLIENT_SECRET
     redirect_uri = "http://localhost/callback"
-    provider = 'fitbot'
+    provider = "fitbot"
     scope = [
         "activity",
         "nutrition",
