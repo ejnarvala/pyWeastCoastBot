@@ -11,17 +11,18 @@ from domain.nba.nba_wins_pool_service import NbaWinsPoolService
 service = NbaWinsPoolService()
 
 
+async def check_in_guild(ctx):
+    if not ctx.message.guild:
+        await ctx.reply("Command must be called within a server")
+        return False
+    return True
+
 class Nba(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_check(self, ctx):
-        if ctx.message and not ctx.message.guild.id:
-            ctx.send("Command must be called within a server")
-            return False
-        return True
-
     @commands.command()
+    @commands.check(check_in_guild)
     async def nba_wins_pool(self, ctx):
         guild_id = ctx.message.guild.id
         guild_standings = service.guild_standings(guild_id)
@@ -34,6 +35,7 @@ class Nba(commands.Cog):
         await ctx.send(embed=response.to_embed(), file=response.wins_graph_file)
 
     @commands.command()
+    @commands.check(check_in_guild)
     async def nba_wins_pool_teams(self, ctx):
         guild_id = ctx.message.guild.id
         team_breakdown_df = service.guild_team_breakdown(guild_id)
