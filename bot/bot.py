@@ -30,3 +30,5 @@ logging.basicConfig(
 
 if __name__ == "__main__":
     run()
+
+# refactor everything to top level, move bot as app with cogs. make domain app, make db app

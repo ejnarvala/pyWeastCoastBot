@@ -14,7 +14,8 @@ class Reminder(models.Model):
 
 class ThirdPartyAuth(models.Model):
     class Meta:
-        unique_together = [['user_id', 'provider', 'guild_id']]
+        unique_together = [["user_id", "provider", "guild_id"]]
+
     user_id = models.TextField()
     provider = models.TextField()
     guild_id = models.TextField()
@@ -23,3 +24,14 @@ class ThirdPartyAuth(models.Model):
     scope = models.TextField()
     expires_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class UserWinPoolTeam(models.Model):
+    class Meta:
+        unique_together = [["guild_id", "team_name"]]
+
+    user_id = models.TextField()
+    guild_id = models.TextField()
+    bdl_team_id = models.TextField()
+    team_name = models.TextField()
+    auction_price = models.IntegerField()

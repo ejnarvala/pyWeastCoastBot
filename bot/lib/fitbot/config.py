@@ -6,7 +6,7 @@ class FitbotConfig:
     client_id = FITBIT_CLIENT_ID
     client_secret = FITBIT_CLIENT_SECRET
     redirect_uri = "http://localhost/callback"
-    provider = 'fitbot'
+    provider = "fitbot"
     scope = [
         "activity",
         "nutrition",

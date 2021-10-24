@@ -21,8 +21,7 @@ class FitbotService:
     @classmethod
     def auth_url(cls):
         url, _ = cls.unauth_fitbit.client.authorize_token_url(
-            scope=cls.config.scope,
-            redirect_uri="http://localhost/callback"
+            scope=cls.config.scope, redirect_uri="http://localhost/callback"
         )
         return url
 
@@ -39,10 +38,10 @@ class FitbotService:
             user_id=user_id,
             provider=cls.config.provider,
             guild_id=guild_id,
-            access_token=token['access_token'],
-            refresh_token=token['refresh_token'],
-            scope=','.join(token['scope']),
-            expires_at=datetime.fromtimestamp(token['expires_at'])
+            access_token=token["access_token"],
+            refresh_token=token["refresh_token"],
+            scope=",".join(token["scope"]),
+            expires_at=datetime.fromtimestamp(token["expires_at"]),
         )
         return auth
 
@@ -70,24 +69,22 @@ class FitbotService:
             FitbotConfig.client_secret,
             access_token=auth.access_token,
             refresh_token=auth.refresh_token,
-            refresh_cb=FitbitTokenRefresher(auth)
+            refresh_cb=FitbitTokenRefresher(auth),
         )
 
     @classmethod
     def get_guild_weekly_stats(cls, guild_id):
         user_auths = ThirdPartyAuth.objects.filter(
-            provider=FitbotConfig.provider,
-            guild_id=guild_id
+            provider=FitbotConfig.provider, guild_id=guild_id
         )
         user_stats = [cls.get_user_weekly_stats(auth) for auth in user_auths]
         return GuildWeeklyStats(user_stats)
 
     @staticmethod
-    def _get_time_series(client, resource, period='7d'):
-        return client.time_series(
-            f"activities/{resource}",
-            period=period
-        ).get(f"activities-{resource}")
+    def _get_time_series(client, resource, period="7d"):
+        return client.time_series(f"activities/{resource}", period=period).get(
+            f"activities-{resource}"
+        )
 
     @classmethod
     def get_user_weekly_stats(cls, auth):
@@ -97,7 +94,7 @@ class FitbotService:
             fairly_active=cls._get_time_series(client, "minutesFairlyActive"),
             very_active=cls._get_time_series(client, "minutesVeryActive"),
             steps=cls._get_time_series(client, "steps"),
-            distance=cls._get_time_series(client, "distance")
+            distance=cls._get_time_series(client, "distance"),
         )
 
 
@@ -108,32 +105,29 @@ class LeaderboardEntry:
 
 
 class GuildWeeklyStats:
-
     def __init__(self, user_stats):
         self.user_stats = user_stats
 
     @property
     def weekly_active_minutes_leaderboard(self):
-        return self._leaderboard('total_active_minutes')
+        return self._leaderboard("total_active_minutes")
 
     @property
     def last_day_steps_leaderboard(self):
-        return self._leaderboard('last_day_steps')
+        return self._leaderboard("last_day_steps")
 
     @property
     def weekly_steps_leaderboard(self):
-        return self._leaderboard('total_steps')
+        return self._leaderboard("total_steps")
 
     def _leaderboard(self, metric):
         return sorted(
             [
-                LeaderboardEntry(
-                    user_id=user_stat.user_id,
-                    score=getattr(user_stat, metric)
-                ) for user_stat in self.user_stats
+                LeaderboardEntry(user_id=user_stat.user_id, score=getattr(user_stat, metric))
+                for user_stat in self.user_stats
             ],
             key=lambda lb_entry: lb_entry.score,
-            reverse=True
+            reverse=True,
         )
 
     @property
@@ -142,7 +136,7 @@ class GuildWeeklyStats:
 
     @property
     def steps_df(self):
-        return self._metric_df('steps')
+        return self._metric_df("steps")
 
     @cached_property
     def distance_df(self):
@@ -152,7 +146,7 @@ class GuildWeeklyStats:
         data = dict()
         for user_stat in self.user_stats:
             metric_data = getattr(user_stat, metric)
-            index = user_stat.metric_days[-len(metric_data):]
+            index = user_stat.metric_days[-len(metric_data) :]
             series = pd.Series(metric_data, index=index)
             data[user_stat.user_id] = series
         return pd.DataFrame(data)
@@ -168,14 +162,11 @@ class UserWeeklyStats:
 
     @staticmethod
     def _time_series_values(series, data_type):
-        return [data_type(d['value']) for d in series]
+        return [data_type(d["value"]) for d in series]
 
     @property
     def metric_days(self):
-        return [
-            datetime.strptime(d['dateTime'], "%Y-%m-%d")
-            for d in self._steps_data
-        ]
+        return [datetime.strptime(d["dateTime"], "%Y-%m-%d") for d in self._steps_data]
 
     @property
     def steps(self):
@@ -220,12 +211,11 @@ class UserWeeklyStats:
 
 
 class FitbitTokenRefresher:
-
     def __init__(self, auth):
         self.auth = auth
 
     def __call__(self, new_token):
-        self.auth.refresh_token = new_token['refresh_token']
-        self.auth.access_token = new_token['access_token']
-        self.auth.expires_at = datetime.fromtimestamp(new_token['expires_at'])
+        self.auth.refresh_token = new_token["refresh_token"]
+        self.auth.access_token = new_token["access_token"]
+        self.auth.expires_at = datetime.fromtimestamp(new_token["expires_at"])
         self.auth.save()
