@@ -17,6 +17,7 @@ async def check_in_guild(ctx):
         return False
     return True
 
+
 class Nba(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
