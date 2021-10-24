@@ -14,9 +14,7 @@ DATABASES = {"default": dj_database_url.config(conn_max_age=600)}
 
 INSTALLED_APPS = ("bot", "db", "lib", "domain")
 
-# BOT_TOKEN = get("BOT_TOKEN")
 OMDB_API_SECRET = get("OMDB_API_SECRET")
-# COMMAND_PREFIX_OVERRIDE = get("COMMAND_PREFIX_OVERRIDE")
 
 FITBIT_CLIENT_ID = get("FITBIT_CLIENT_ID")
 FITBIT_CLIENT_SECRET = get("FITBIT_CLIENT_SECRET")
