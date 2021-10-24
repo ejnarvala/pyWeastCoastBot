@@ -25,8 +25,8 @@ class NbaRepository:
         return [cls._build_nba_team_from_bdl_team(team) for team in cls.client.all_teams()]
 
     @classmethod
-    def games(cls, start_date):
-        params = BallDontLieParams(start_date=start_date)
+    def games(cls, start_date, end_date):
+        params = BallDontLieParams(start_date=start_date, end_date=end_date)
         for game in cls.client.games(params):
             yield NbaGame(
                 id=game["id"],

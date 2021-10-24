@@ -3,7 +3,7 @@ setup:
     - plan: heroku-postgresql
 build:
   docker:
-    worker: bot/Dockerfile
+    worker: Dockerfile
 release:
   image: worker
   command:

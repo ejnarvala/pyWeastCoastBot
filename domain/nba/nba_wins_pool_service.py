@@ -15,22 +15,17 @@ class NbaWinsPoolService:
     nba_repo = NbaRepository()
 
     # in-memory cache
-    _current_seasons_completed_games = None
+    _current_seasons_games = None
 
     @classmethod
-    def current_seasons_completed_games(cls):
-        if cls._current_seasons_completed_games:
-            return cls._current_seasons_completed_games
+    def current_seasons_games(cls):
+        if cls._current_seasons_games:
+            return cls._current_seasons_games
 
-        this_seasons_games = []
-        games = cls.nba_repo.games(start_date=SEASON_START_DATE_2021)
-        for game in games:
-            if game.status != "Final":
-                break
-            this_seasons_games.append(game)
+        games = cls.nba_repo.games(start_date=SEASON_START_DATE_2021, end_date=datetime.utcnow())
 
-        cls._current_seasons_completed_games = this_seasons_games
-        return this_seasons_games
+        cls._current_seasons_games = games
+        return games
 
     @classmethod
     def get_guild_user_teams(cls, guild_id):
@@ -45,7 +40,7 @@ class NbaWinsPoolService:
 
         team_id_to_user_id = {user_team.bdl_team_id: user_team.user_id for user_team in user_teams}
 
-        games = cls.current_seasons_completed_games()
+        games = cls.current_seasons_games()
         games_df = cls.gen_games_df(games, team_id_to_user_id)
 
         leaderboard_df = cls.build_leaderboard_df(games_df)
@@ -68,7 +63,7 @@ class NbaWinsPoolService:
         }
 
         user_ids = set(user_team.user_id for user_team in user_teams)
-        games = cls.current_seasons_completed_games()
+        games = cls.current_seasons_games()
         games_df = cls.gen_games_df(games, team_id_to_user_id)
         teams_df = cls.gen_teams_df(cls.nba_repo.all_teams, team_id_to_price)
         return cls.build_team_breakdown_df(

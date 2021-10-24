@@ -24,7 +24,6 @@ class Nba(commands.Cog):
         guild_standings = service.guild_standings(guild_id)
         user_ids = list(guild_standings.leaderboard_df["owner"])
         user_id_to_name = await self.get_user_names(user_ids)
-        logging.info(user_id_to_name)
         response = NbaWinsPoolStandingsResponse(
             guild_standings=guild_standings, user_id_map=user_id_to_name
         )
@@ -51,8 +50,10 @@ class NbaWinsPoolStandingsResponse:
         leaderboard_df = self.guild_standings.leaderboard_df
 
         leaderboard_df["name"] = leaderboard_df["owner"].map(self.user_id_map)
-        leaderboard_df = leaderboard_df[["rank", "name", "wins", "losses"]]
-        leaderboard_df = leaderboard_df.astype(str)
+        leaderboard_df["record"] = (
+            leaderboard_df[["wins", "losses"]].astype(str).agg("-".join, axis=1)
+        )
+        leaderboard_df = leaderboard_df[["rank", "name", "record"]].astype(str)
         ascii_table = table2ascii(
             header=leaderboard_df.columns.tolist(), body=leaderboard_df.values.tolist()
         )
