@@ -118,7 +118,6 @@ class NbaWinsPoolService:
         """
         data = pd.json_normalize([team.to_dict() for team in teams])
         teams_df = pd.DataFrame(data).set_index("id", drop=False)
-        logging.info(teams_df)
         teams_df["auction_price"] = teams_df["id"].astype(str).map(team_id_to_price)
 
         return teams_df
