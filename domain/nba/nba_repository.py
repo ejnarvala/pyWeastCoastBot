@@ -37,3 +37,4 @@ class NbaRepository:
                 visitor_team=cls._build_nba_team_from_bdl_team(game["visitor_team"]),
                 visitor_team_score=game["visitor_team_score"],
             )
+

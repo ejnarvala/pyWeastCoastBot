@@ -1,16 +1,7 @@
-from collections import defaultdict, namedtuple
 from datetime import datetime
-from functools import cached_property
-from typing import DefaultDict
-import attr
 
-import pandas as pd
 import requests
-from db.models import UserWinPoolTeam
-from lib.balldontlie.game import Game
 from lib.balldontlie.params import BallDontLieParams
-from lib.balldontlie.team import Team
-from lib.utils.graph import generate_line_plot_image
 
 SEASON_START_DATE_2021 = datetime(2021, 10, 18)  # TODO update this next year(FY2023)
 
@@ -29,7 +20,7 @@ class BallDontLieClient:
 
         url = f"{self.BASE_URL}/{path}"
 
-        resp = requests.request(kwargs.get("method", "GET"), url, params=params.to_dict() ** kwargs)
+        resp = requests.request(kwargs.get("method", "GET"), url, params=params.to_dict(), **kwargs)
 
         resp.raise_for_status()
 
@@ -47,7 +38,7 @@ class BallDontLieClient:
             page = self._request(path, params, **kwargs)
             for d in page["data"]:
                 yield d
-            has_more = page["next_page"] is not None
+            has_more = page["meta"]["next_page"] is not None
 
     def _has_next_page(page):
         if page["meta"]["next_page"]:

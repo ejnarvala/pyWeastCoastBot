@@ -1,4 +1,4 @@
-from settings import FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET
+from pyWeastCoastBot.settings import FITBIT_CLIENT_ID, FITBIT_CLIENT_SECRET
 
 
 class FitbotConfig:

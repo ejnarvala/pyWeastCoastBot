@@ -1,10 +1,12 @@
+from datetime import datetime
 import attr
-
+from dateutil import parser
 
 def format_date(data):
-    if not data:
-        return
-    return data.fromisoformat(data)
+    if isinstance(data, datetime):
+        return data
+    if isinstance(data, str):
+        return parser.isoparse(data)
 
 
 @attr.s

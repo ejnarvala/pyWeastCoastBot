@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   bot:
-    build: ./bot
-    env_file: ./bot/.env
+    build: .
+    env_file: .env
     environment: 
       DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
       COMMAND_PREFIX_OVERRIDE: //
-    command: watchmedo auto-restart -R --debug-force-polling -p "*.py" python bot.py
+    command: watchmedo auto-restart -R --debug-force-polling -p "*.py" python run_bot.py
     volumes:
-      - ./bot/:/app
+      - .:/app
     depends_on: 
       - migration
       - db
@@ -26,10 +26,10 @@ services:
   migration:
     environment: 
       DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
-    build: ./bot
+    build: .
     command: bash -c "./bin/wait-for-it.sh db:5432 && python manage.py makemigrations db && python manage.py migrate db"
     volumes:
-      - ./bot/:/app
+      - .:/app
     depends_on:
       - db
 volumes:

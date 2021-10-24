@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from db.models import UserWinPoolTeam
-from lib.balldontlie.client import BallDontLieClient
+from domain.nba.nba_repository import NbaRepository
 
 import logging
 
@@ -50,15 +50,16 @@ user_id_to_user = {
     525530793351839744: "Josiah",
 }
 
-client = BallDontLieClient()
+nba_repo = NbaRepository()
 
 
 class Command(BaseCommand):
     def handle(self, **options):
-        all_teams = client.all_teams()
+        all_teams = nba_repo.all_teams
+
         team_name_to_id = {team.name: team.id for team in all_teams}
 
-        for user_id, team_names in user_id_to_team_names:
+        for user_id, team_names in user_id_to_team_names.items():
             logging.info(f"Processing {user_id_to_user[user_id]} - {team_names}")
 
             if len(team_names) < 5:
@@ -67,13 +68,14 @@ class Command(BaseCommand):
                 )
 
             for team_name in team_names:
+                team_id = team_name_to_id[team_name]
                 try:
                     UserWinPoolTeam.objects.create(
                         user_id=user_id,
                         guild_id=guild_id,
-                        bdl_team_id=team_name_to_id[team_names],
-                        team_name=team_names,
-                        auction_price=team_id_to_auction_price[team_name_to_id[team_name]],
+                        bdl_team_id=team_id,
+                        team_name=team_name,
+                        auction_price=team_id_to_auction_price[team_id],
                     )
                 except Exception as e:
                     logging.info(

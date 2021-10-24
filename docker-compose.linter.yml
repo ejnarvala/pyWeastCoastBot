@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   linter:
-    build: ./bot
+    build: .
     command: bash -c "black . && flake8 ."
     volumes:
-      - ./bot/:/app
+      - .:/app

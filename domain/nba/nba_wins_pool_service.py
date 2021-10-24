@@ -1,12 +1,11 @@
-from collections import defaultdict
 from datetime import datetime
-from functools import cached_property
+import logging
 
 import pandas as pd
 from db.models import UserWinPoolTeam
-from domain.nba_wins_pool.guild_standings import GuildStandings
-from lib.balldontlie.client import NbaRepository
-from lib.utils.graph import generate_line_plot_image
+from domain.nba.guild_standings import GuildStandings
+from domain.nba.nba_repository import NbaRepository
+from lib.utils.graph import generate_line_plot
 
 SEASON_START_DATE_2021 = datetime(2021, 10, 18)  # TODO update this next year(FY2023)
 
@@ -15,9 +14,14 @@ class NbaWinsPoolService:
 
     nba_repo = NbaRepository()
 
-    @cached_property
+    # in-memory cache
+    _current_seasons_completed_games = None
+
     @classmethod
     def current_seasons_completed_games(cls):
+        if cls._current_seasons_completed_games:
+            return cls._current_seasons_completed_games
+        
         this_seasons_games = []
         games = cls.nba_repo.games(start_date=SEASON_START_DATE_2021)
         for game in games:
@@ -25,6 +29,7 @@ class NbaWinsPoolService:
                 break
             this_seasons_games.append(game)
 
+        cls._current_seasons_completed_games = this_seasons_games
         return this_seasons_games
 
     @classmethod
@@ -40,17 +45,18 @@ class NbaWinsPoolService:
 
         team_id_to_user_id = {user_team.bdl_team_id: user_team.user_id for user_team in user_teams}
 
-        games_df = cls.gen_games_df(cls.current_seasons_completed_games, team_id_to_user_id)
+        games = cls.current_seasons_completed_games()
+        games_df = cls.gen_games_df(games, team_id_to_user_id)
 
-        wins_per_day_df = cls.build_race_plot_df(games_df, team_id_to_user_id)
-        leaderboard_df = cls.build_leaderboard_df(games_df, team_id_to_user_id)
-
-        wins_per_day_image = generate_line_plot_image(
-            wins_per_day_df, x=wins_per_day_df.index, y=list(wins_per_day_df.columns)
-        )
+        leaderboard_df = cls.build_leaderboard_df(games_df)
+        owners = leaderboard_df['owner'].tolist()
+        race_plot_df = cls.build_race_plot_df(games_df, owners)
+        # race_plot_df = generate_line_plot(
+        #     wins_per_day_df, x=wins_per_day_df['date'], y=list(owners)
+        # )
 
         return GuildStandings(
-            wins_per_day_image=wins_per_day_image,
+            race_plot_df=race_plot_df,
             leaderboard_df=leaderboard_df,
         )
 
@@ -61,12 +67,13 @@ class NbaWinsPoolService:
         team_id_to_user_id = {user_team.bdl_team_id: user_team.user_id for user_team in user_teams}
 
         team_id_to_price = {
-            user_team.bdl_team_id: user_team.auction_price for user_team in user_teams
+            user_team.bdl_team_id: user_team.auction_price 
+            for user_team in user_teams
         }
 
         user_ids = set(user_team.user_id for user_team in user_teams)
-
-        games_df = cls.gen_games_df(cls.current_seasons_completed_games, team_id_to_user_id)
+        games = cls.current_seasons_completed_games()
+        games_df = cls.gen_games_df(games, team_id_to_user_id)
         teams_df = cls.gen_teams_df(cls.nba_repo.all_teams, team_id_to_price)
         return cls.build_team_breakdown_df(
             games_df, teams_df, team_id_to_user_id, team_id_to_price, user_ids
@@ -144,9 +151,8 @@ class NbaWinsPoolService:
         team_id_to_owner: dict
             mapping of team id to owner
         """
-
-        df = pd.DataFrame.from_records([game.to_dict() for game in games])
-
+        data = pd.json_normalize([game.to_dict() for game in games])
+        df = pd.DataFrame(data)
         df["winning_team_id"] = df["home_team.id"].where(
             (df.status == "Final") & (df.home_team_score > df.visitor_team_score),
             other=df["visitor_team.id"].where(df.status == "Final"),
@@ -179,8 +185,9 @@ class NbaWinsPoolService:
         -------
         pandas DataFrame of all NBA teams
         """
-        team_records = [team.to_dict() for team in teams]
-        teams_df = pd.DataFrame.from_records(team_records).set_index("id", drop=False)
+        data = pd.json_normalize([team.to_dict() for team in teams])
+        teams_df = pd.DataFrame(data).set_index("id", drop=False)
+        logging.info(teams_df)
         teams_df["auction_price"] = teams_df["id"].astype(str).map(team_id_to_price)
 
         return teams_df
@@ -208,7 +215,7 @@ class NbaWinsPoolService:
         )
         leaderboard_df = (
             leaderboard_df.reset_index()
-            .rename(columns=dict(index="user_id"))
+            .rename(columns=dict(index="owner"))
             .sort_values(by=["wins", "losses"], ascending=[False, True], ignore_index=True)
         )
 
@@ -266,7 +273,7 @@ class NbaWinsPoolService:
         return team_breakdown_df.loc[owners]
 
     @staticmethod
-    def build_race_plot_df(game_data_df, leaderboard_df):
+    def build_race_plot_df(game_data_df, owners):
         """
         Generate dataframe showing cumulative wins per owner by date
 
@@ -283,13 +290,12 @@ class NbaWinsPoolService:
         """
         df = game_data_df
         race_plot_counts = df.groupby(["date", "winning_owner"])["id"].count()
-
         race_plot_df = pd.DataFrame(
             race_plot_counts.index.get_level_values(0)
             .unique()
             .insert(0, pd.to_datetime("2021-10-18", utc=True))
         )
-        for owner in leaderboard_df.index:
+        for owner in owners:
             race_plot_df = race_plot_df.merge(
                 race_plot_counts[:, owner].cumsum().rename(owner),
                 how="left",

@@ -4,5 +4,5 @@ import attr
 @attr.s
 class GuildStandings:
 
-    wins_per_day_image = attr.ib()
+    race_plot_df = attr.ib()
     leaderboard_df = attr.ib()

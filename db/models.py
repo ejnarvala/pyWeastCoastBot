@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Reminder(models.Model):
+
     user_id = models.TextField()
     channel_id = models.TextField()
     message_id = models.TextField()
@@ -34,4 +35,4 @@ class UserWinPoolTeam(models.Model):
     guild_id = models.TextField()
     bdl_team_id = models.TextField()
     team_name = models.TextField()
-    auction_price = models.IntegerField()
+    auction_price = models.IntegerField(default=0)

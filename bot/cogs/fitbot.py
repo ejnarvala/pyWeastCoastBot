@@ -67,7 +67,11 @@ class Fitbot(commands.Cog):
 
     @commands.command(description="Get Fitbit stats")
     async def fitbot_leaderboard(self, ctx):
-        stats = self.fitbot.get_guild_weekly_stats(ctx.message.guild.id)
+        if not ctx.message.guild:
+            await ctx.reply("Command only works within a server")
+            return
+        guild_id = ctx.message.guild.id
+        stats = self.fitbot.get_guild_weekly_stats(guild_id)
         user_id_to_username = {}
         for user_id in stats.user_ids:
             user = await self.bot.fetch_user(int(user_id))
