@@ -51,9 +51,6 @@ class NbaWinsPoolService:
         leaderboard_df = cls.build_leaderboard_df(games_df)
         owners = leaderboard_df["owner"].tolist()
         race_plot_df = cls.build_race_plot_df(games_df, owners)
-        # race_plot_df = generate_line_plot(
-        #     wins_per_day_df, x=wins_per_day_df['date'], y=list(owners)
-        # )
 
         return GuildStandings(
             race_plot_df=race_plot_df,
@@ -77,66 +74,6 @@ class NbaWinsPoolService:
         return cls.build_team_breakdown_df(
             games_df, teams_df, team_id_to_user_id, team_id_to_price, user_ids
         )
-
-    # @classmethod
-    # def _wins_per_day_df(cls, games, team_id_to_user_id):
-    #     date_to_games = defaultdict(list)
-    #     for game in games:
-    #         date_to_games[game.date].append(game)
-
-    #     wins_per_day = defaultdict(list)
-    #     for _, day_games in date_to_games:
-    #         daily_wins = defaultdict(int)
-    #         for day_game in day_games:
-    #             home_user_id = team_id_to_user_id.get(day_game.home_team.id)
-    #             visitor_user_id = team_id_to_user_id.get(day_game.visitor_team.id)
-    #             if day_game.home_team_score > day_games.visitor_team_score:
-    #                 daily_wins[home_user_id] += 1
-    #             else:
-    #                 daily_wins[visitor_user_id] += 1
-    #         wins_per_day.append(daily_wins)
-
-    #     return pd.DataFrame(wins_per_day)
-
-    # @classmethod
-    # def _user_win_loss_total_df(cls, games, team_id_to_user_id):
-    #     wins = defaultdict(int)
-    #     losses = defaultdict(int)
-    #     for game in games:
-    #         home_user_id = team_id_to_user_id.get(game.home_team.id)
-    #         visitor_user_id = team_id_to_user_id.get(game.visitor_team.id)
-    #         if game.home_team_score > games.visitor_team_score:
-    #             wins[home_user_id] += 1
-    #             losses[visitor_user_id] += 1
-    #         else:
-    #             losses[home_user_id] += 1
-
-    #     # instead of deleting could add 'teams not in pool' W/L
-    #     del wins[None]
-    #     del losses[None]
-    #     df = pd.DataFrame(dict(wins=wins, losses=losses))
-    #     df.reset_index()
-    #     return df.reset_index().rename(columns=dict(index='user_id'))
-
-    # @classmethod
-    # def _standings_df(cls, games, team_id_to_user_id):
-    #     wins_losses_df = cls.user_win_loss_total_df(games, team_id_to_user_id)
-    #     ranked_wins_losses_df = wins_losses_df.sort_values(
-    #         by=['wins'], ascending=False, ignore_index=True, inplace=True
-    #     )
-    #     ranked_wins_losses_df['rank'] = ranked_wins_losses_df.index + 1
-    #     return ranked_wins_losses_df
-
-    # @classmethod
-    # def build_standings_df(cls, games, team_id_to_user_id):
-    #     games_df = cls.gen_games_df(games, team_id_to_user_id)
-    #     wins_losses_df = cls.build_leaderboard_df(games_df)
-    #     wins_losses_df = wins_losses_df.reset_index().rename(columns=dict(index='user_id'))
-    #     ranked_wins_losses_df = wins_losses_df.sort_values(
-    #         by=['wins'], ascending=False, ignore_index=True, inplace=True
-    #     )
-    #     ranked_wins_losses_df['rank'] = ranked_wins_losses_df.index + 1
-    #     return ranked_wins_losses_df
 
     @staticmethod
     def gen_games_df(games, team_id_to_owner):
