@@ -20,10 +20,9 @@ class NbaWinsPoolService:
         try:
             games = cls._current_seasons_games
         except AttributeError:
-            games = list(cls.nba_repo.games(
-                start_date=SEASON_START_DATE_2021, 
-                end_date=datetime.utcnow()
-            ))
+            games = list(
+                cls.nba_repo.games(start_date=SEASON_START_DATE_2021, end_date=datetime.utcnow())
+            )
             cls._current_seasons_games = games
         return games
 
@@ -150,7 +149,7 @@ class NbaWinsPoolService:
             .sort_values(by=["wins", "losses"], ascending=[False, True], ignore_index=True)
         )
 
-        leaderboard_df["rank"] = leaderboard_df["wins"].rank(method='min', ascending=False)
+        leaderboard_df["rank"] = leaderboard_df["wins"].rank(method="min", ascending=False)
 
         return leaderboard_df
 
