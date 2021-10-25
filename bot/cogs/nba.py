@@ -66,11 +66,11 @@ class NbaWinsPoolStandingsResponse:
     def description(self):
         leaderboard_df = self.guild_standings.leaderboard_df
 
-        leaderboard_df["name"] = leaderboard_df["owner"].map(self.user_id_map)
+        leaderboard_df["user"] = leaderboard_df["owner"].map(self.user_id_map)
         leaderboard_df["record"] = (
             leaderboard_df[["wins", "losses"]].astype(str).agg("-".join, axis=1)
         )
-        leaderboard_df = leaderboard_df[["rank", "name", "record"]].astype(str)
+        leaderboard_df = leaderboard_df[["rank", "user", "record"]].astype(str)
         ascii_table = table2ascii(
             header=leaderboard_df.columns.tolist(), body=leaderboard_df.values.tolist()
         )
