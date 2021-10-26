@@ -16,16 +16,13 @@ class NbaWinsPoolService:
 
     @classmethod
     def current_seasons_games(cls):
-        # poor man's cache
-        try:
-            games = cls._current_seasons_games
-        except AttributeError:
-            games = list(
-                cls.nba_repo.games(start_date=SEASON_START_DATE_2021, end_date=datetime.utcnow())
+        return list(
+            cls.nba_repo.games(
+                start_date=SEASON_START_DATE_2021, 
+                end_date=datetime.utcnow()
             )
-            cls._current_seasons_games = games
-        return games
-
+        )
+        
     @classmethod
     def get_guild_user_teams(cls, guild_id):
         user_teams = UserWinPoolTeam.objects.filter(guild_id=guild_id)
