@@ -41,5 +41,6 @@ class BallDontLieParams:
             "player_ids[]": self.player_ids,
             "game_ids[]": self.game_ids,
             "per_page": self.per_page,
+            "page": self.page
         }
-        return {k: v for k, v in params.items() if v}
+        return {k: v for k, v in params.items() if v is not None}

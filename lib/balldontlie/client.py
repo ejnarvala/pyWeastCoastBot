@@ -30,20 +30,12 @@ class BallDontLieClient:
         return self._request(*args, **kwargs)["data"]
 
     def _request_data_generator(self, path, params=BallDontLieParams(), **kwargs):
-        params.page = 0
         params.per_page = 100
-
-        has_more = True
-        while has_more:
+        while params.page is not None:
             page = self._request(path, params, **kwargs)
             for d in page["data"]:
                 yield d
-            has_more = page["meta"]["next_page"] is not None
-
-    def _has_next_page(page):
-        if page["meta"]["next_page"]:
-            return True
-        return False
+            params.page = page["meta"]["next_page"]
 
     def all_teams(self):
         return list(self._request_data_generator("teams"))
