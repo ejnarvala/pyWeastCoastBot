@@ -1,12 +1,12 @@
-import logging
 import attr
-from lib.utils.consts import NBA_WINS_POOL_SHEET_URL
-from lib.utils.graph import generate_line_plot, write_fig_to_tempfile
-from table2ascii import table2ascii
 from discord import Colour, Embed, File
 from discord.ext import commands
+from table2ascii import table2ascii
+
 from domain.nba.guild_standings import GuildStandings
 from domain.nba.nba_wins_pool_service import NbaWinsPoolService
+from lib.utils.consts import NBA_WINS_POOL_SHEET_URL
+from lib.utils.graph import generate_line_plot, write_fig_to_tempfile
 
 service = NbaWinsPoolService()
 
@@ -63,6 +63,12 @@ class NbaWinsPoolStandingsResponse:
     user_id_map = attr.ib()
 
     @property
+    def fields(self):
+        scoreboard_df = self.guild_standings.nba_scoreboard_df
+        scoreboard_table = table2ascii(body=scoreboard_df.values.tolist())
+        return [("NBA Scoreboard", f"```{scoreboard_table}```", False)]
+
+    @property
     def description(self):
         leaderboard_df = self.guild_standings.leaderboard_df
 
@@ -104,6 +110,8 @@ class NbaWinsPoolStandingsResponse:
             description=self.description,
             color=self.color,
         )
+        for name, value, inline in self.fields:
+            embed.add_field(name=name, value=value, inline=inline)
         embed.set_image(url="attachment://image.png")
         return embed
 

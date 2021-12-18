@@ -1,11 +1,12 @@
-from datetime import datetime
 import logging
+import re
+from datetime import datetime
 
 import pandas as pd
+
 from db.models import UserWinPoolTeam
 from domain.nba.guild_standings import GuildStandings
 from domain.nba.nba_repository import NbaRepository
-from lib.utils.graph import generate_line_plot
 
 SEASON_START_DATE_2021 = datetime(2021, 10, 18)  # TODO update this next year(FY2023)
 
@@ -17,10 +18,7 @@ class NbaWinsPoolService:
     @classmethod
     def current_seasons_games(cls):
         return list(
-            cls.nba_repo.games(
-                start_date=SEASON_START_DATE_2021, 
-                end_date=datetime.utcnow()
-            )
+            cls.nba_repo.games(start_date=SEASON_START_DATE_2021)
         )
         
     @classmethod
@@ -41,10 +39,12 @@ class NbaWinsPoolService:
         leaderboard_df = cls.build_leaderboard_df(games_df)
         owners = leaderboard_df["owner"].tolist()
         race_plot_df = cls.build_race_plot_df(games_df, owners)
+        scoreboard_df = cls.build_scoreboard_df(games_df)
 
         return GuildStandings(
             race_plot_df=race_plot_df,
             leaderboard_df=leaderboard_df,
+            nba_scoreboard_df=scoreboard_df
         )
 
     @classmethod
@@ -233,3 +233,25 @@ class NbaWinsPoolService:
             )
 
         return race_plot_df.fillna(method="ffill").fillna(0)
+
+    @staticmethod
+    def build_scoreboard_df(game_data_df):
+        df = game_data_df
+        df["score"] = df.apply(generate_score_str, axis=1)
+        todays_games = df[(df["date"].max().month == df["date"].dt.month) & (df["date"].max().day == df["date"].dt.day)]
+        return todays_games.sort_values(by="status")[["status", "score"]]
+
+
+def generate_score_str(scoreboard_row):
+    home_tm = scoreboard_row["home_team.abbreviation"]
+    away_tm = scoreboard_row["visitor_team.abbreviation"]
+    home_score = scoreboard_row["home_team_score"]
+    away_score = scoreboard_row["visitor_team_score"]
+    status = scoreboard_row["status"]
+
+    if re.match("^[0-9|P]", status):
+        # Game hasn't started or is postponed, don't show score
+        score = f"{home_tm} vs. {away_tm}"
+    else:
+        score = f"{home_tm} {home_score}, {away_tm} {away_score}"
+    return score
