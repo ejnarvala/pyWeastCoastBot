@@ -9,6 +9,7 @@ SEASON_START_DATE_2021 = datetime(2021, 10, 18)  # TODO update this next year(FY
 class BallDontLieClient:
 
     BASE_URL = "https://www.balldontlie.io/api/v1/"
+    NBA_LIVE_URL = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
 
     @property
     def current_season(self):
@@ -42,3 +43,8 @@ class BallDontLieClient:
 
     def games(self, params=BallDontLieParams()):
         return self._request_data_generator("games", params)
+
+    def live_games(self):
+        live_response = requests.get(self.NBA_LIVE_URL)
+        live_response.raise_for_status()
+        return live_response.json()['scoreboard']['games']
