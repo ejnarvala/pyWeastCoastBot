@@ -30,9 +30,38 @@ class NbaWinsPoolService:
 
     @classmethod
     def guild_standings(cls, guild_id):
-        user_teams = cls.get_guild_user_teams(guild_id)
+        # user_teams = cls.get_guild_user_teams(guild_id)
+        #
+        # team_id_to_user_id = {user_team.bdl_team_id: user_team.user_id for user_team in user_teams}
 
-        team_id_to_user_id = {user_team.bdl_team_id: user_team.user_id for user_team in user_teams}
+        # Hardcoding teams here for debugging purposes
+        team_id_to_user_id = {
+            "3": "Ejnar",
+            "25": "Ejnar",
+            "30": "Ejnar",
+            "13": "Ejnar",
+            "1": "Ejnar",
+            "7": "Sup",
+            "17": "Sup",
+            "29": "Sup",
+            "18": "Sup",
+            "28": "Sup",
+            "2": "Rishi",
+            "20": "Rishi",
+            "16": "Rishi",
+            "8": "Rishi",
+            "26": "Rishi",
+            "14": "Sharan",
+            "10": "Sharan",
+            "27": "Sharan",
+            "5": "Sharan",
+            "19": "Sharan",
+            "4": "Josiah",
+            "15": "Josiah",
+            "24": "Josiah",
+            "23": "Josiah",
+            "12": "Josiah"
+        }
 
         games = cls.current_seasons_games()
         games_df = cls.gen_games_df(games, team_id_to_user_id)
@@ -51,13 +80,10 @@ class NbaWinsPoolService:
     def guild_team_breakdown(cls, guild_id):
         user_teams = cls.get_guild_user_teams(guild_id)
 
-        team_id_to_user_id = {user_team.bdl_team_id: user_team.user_id for user_team in user_teams}
 
         team_id_to_price = {
             user_team.bdl_team_id: user_team.auction_price for user_team in user_teams
         }
-
-        user_ids = set(user_team.user_id for user_team in user_teams)
         games = cls.current_seasons_games()
         logging.info(games)
 

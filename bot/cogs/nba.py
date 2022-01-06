@@ -50,9 +50,11 @@ class Nba(commands.Cog):
     async def get_user_names(self, user_ids):
         user_id_to_username = {}
         for user_id in user_ids:
-            user = await self.bot.fetch_user(int(user_id))
-            if user and user.display_name:
-                user_id_to_username[user_id] = user.name
+            user_id_to_username[user_id] = user_id
+            # user = await self.bot.fetch_user(int(user_id))
+            # if user and user.display_name:
+            #     user_id_to_username[user_id] = user.name
+        logging.info("Get user names")
         return user_id_to_username
 
 
