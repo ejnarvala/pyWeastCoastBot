@@ -237,6 +237,7 @@ class NbaWinsPoolService:
     @staticmethod
     def build_scoreboard_df(game_data_df):
         df = game_data_df
+        df['date'] = pd.to_datetime(df["date"], errors='coerce', utc=True).dt.tz_convert('US/Eastern')
         df["score"] = df.apply(generate_score_str, axis=1)
         todays_games = df[(df["date"].max().month == df["date"].dt.month) & (df["date"].max().day == df["date"].dt.day)]
         return todays_games.sort_values(by="status")[["status", "score"]]
