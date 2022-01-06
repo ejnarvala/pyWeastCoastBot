@@ -54,7 +54,6 @@ class Nba(commands.Cog):
             # user = await self.bot.fetch_user(int(user_id))
             # if user and user.display_name:
             #     user_id_to_username[user_id] = user.name
-        logging.info("Get user names")
         return user_id_to_username
 
 
