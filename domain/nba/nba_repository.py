@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from functools import cached_property
 
+import pandas as pd
+
 from domain.nba.nba_game import NbaGame
 from domain.nba.nba_team import NbaTeam
 from lib.balldontlie.client import BallDontLieClient
@@ -76,7 +78,7 @@ class NbaRepository:
             live_date = datetime.strptime(game["gameEt"][:10], '%Y-%m-%d')
             yield NbaGame(
                 id=game["gameId"],
-                date=game["gameEt"],
+                date=pd.Timestamp(game["gameEt"]).astimezone('US/Eastern'),
                 home_team=cls._build_nba_team_from_live_team(game["homeTeam"]),
                 home_team_score=game["homeTeam"]["score"],
                 status=game["gameStatusText"],
@@ -89,7 +91,7 @@ class NbaRepository:
         for game in past_games:
             yield NbaGame(
                 id=game["id"],
-                date=game["date"],
+                date=pd.Timestamp(game["date"]).astimezone('US/Eastern'),
                 home_team=cls._build_nba_team_from_bdl_team(game["home_team"]),
                 home_team_score=game["home_team_score"],
                 status=game["status"],
