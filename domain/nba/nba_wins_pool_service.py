@@ -222,7 +222,7 @@ class NbaWinsPoolService:
         race_plot_df = pd.DataFrame(
             race_plot_counts.index.get_level_values(0)
             .unique()
-            .insert(0, pd.to_datetime("2021-10-18", utc=True))
+            .insert(0, pd.Timestamp(SEASON_START_DATE_2021).tz_localize('US/Eastern'))
         )
         for owner in owners:
             race_plot_df = race_plot_df.merge(
@@ -237,8 +237,8 @@ class NbaWinsPoolService:
     @staticmethod
     def build_scoreboard_df(game_data_df):
         df = game_data_df
-        df['date'] = pd.to_datetime(df["date"], errors='coerce', utc=True).dt.tz_convert('US/Eastern')
-        df["score"] = df.apply(generate_score_str, axis=1)
+        df["status"] = df["status"].str.strip()
+        df["score"] = df.apply(generate_score_str, axis=1).str.strip()
         todays_games = df[(df["date"].max().month == df["date"].dt.month) & (df["date"].max().day == df["date"].dt.day)]
         return todays_games.sort_values(by="status")[["status", "score"]]
 
