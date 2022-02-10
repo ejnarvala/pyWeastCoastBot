@@ -89,6 +89,8 @@ class NbaRepository:
         params = BallDontLieParams(start_date=start_date, end_date=live_date - timedelta(days=1))
         past_games = cls.client.games(params)
         for game in past_games:
+            if game["id"] == 474073:
+                game["home_team_score"] = 101
             yield NbaGame(
                 id=game["id"],
                 date=pd.Timestamp(game["date"]).astimezone('US/Eastern'),
