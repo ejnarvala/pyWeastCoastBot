@@ -78,7 +78,7 @@ class NbaRepository:
             live_date = datetime.strptime(game["gameEt"][:10], '%Y-%m-%d')
             yield NbaGame(
                 id=game["gameId"],
-                date=pd.Timestamp(game["gameEt"]).astimezone('US/Eastern'),
+                date=pd.Timestamp(game["gameEt"]).date().strftime("%Y-%m-%d"),
                 home_team=cls._build_nba_team_from_live_team(game["homeTeam"]),
                 home_team_score=game["homeTeam"]["score"],
                 status=game["gameStatusText"],
@@ -93,7 +93,7 @@ class NbaRepository:
                 game["home_team_score"] = 101
             yield NbaGame(
                 id=game["id"],
-                date=pd.Timestamp(game["date"]).astimezone('US/Eastern'),
+                date=pd.Timestamp(game["date"]).date().strftime("%Y-%m-%d"),
                 home_team=cls._build_nba_team_from_bdl_team(game["home_team"]),
                 home_team_score=game["home_team_score"],
                 status=game["status"],
