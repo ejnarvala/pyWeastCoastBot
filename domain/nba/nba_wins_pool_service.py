@@ -222,7 +222,7 @@ class NbaWinsPoolService:
         race_plot_df = pd.DataFrame(
             race_plot_counts.index.get_level_values(0)
             .unique()
-            .insert(0, pd.Timestamp(SEASON_START_DATE_2021).tz_localize('US/Eastern'))
+            .insert(0, pd.Timestamp(SEASON_START_DATE_2021).date())
         )
         for owner in owners:
             race_plot_df = race_plot_df.merge(
