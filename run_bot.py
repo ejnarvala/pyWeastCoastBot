@@ -5,14 +5,9 @@ from pyWeastCoastBot import settings as app_settings
 
 import logging
 
-DEBUG_GUILD = os.environ.get("DEBUG_GUILD")
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
-bot_kwargs = dict()
-if DEBUG_GUILD:
-    bot_kwargs["debug_guilds"] = [int(DEBUG_GUILD)]
-logging.info(f"Bot kwargs: {bot_kwargs}")
-bot = discord.Bot(**bot_kwargs)
+bot = discord.Bot()
 
 
 def run():

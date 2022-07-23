@@ -27,13 +27,12 @@ class Reminders(commands.Cog):
                 logging.info(f"Handling reminder {reminder}")
                 try:
                     channel = await self.bot.fetch_channel(reminder.channel_id)
-                    discord_message = await channel.fetch_message(reminder.message_id)
-                    response = (
-                        f"> {reminder.message}"
-                        if reminder.message
-                        else ":alarm_clock: Here's your reminder!"
-                    )
-                    await discord_message.reply(response)
+
+                    message = f"<@{reminder.user_id}> :alarm_clock: Here's your reminder!"
+                    if reminder.message:
+                        message += f"\n> {reminder.message}"
+
+                    await channel.send(message)
                 except Exception as e:
                     logging.error(f"Error handling reminder: {e}")
 
@@ -46,15 +45,6 @@ class Reminders(commands.Cog):
     async def before_poll(self):
         await self.bot.wait_until_ready()
 
-    # @commands.command(
-    #     brief="Set reminders",
-    #     usage="<time> [, message]",
-    #     help="Times are stored in UTC, specify timezone "
-    #     "if you are inputting a specific date/time string "
-    #     "e.g. '9/15/21 3:00 PM EST'. Reminders are polled "
-    #     "for every 30s. Deleting a remindme command will remove the reminder.",
-    #     description="Set reminders",
-    # )
     @slash_command(
         description="Set reminders - recommended to specify timezone - delete to cancel",
         debug_guilds=[896903198172930058],
@@ -68,11 +58,9 @@ class Reminders(commands.Cog):
         reminder_datetime = parse_utc_datetime(time)
         if reminder_datetime < utc_now():
             raise Exception("Parsed time is in the past")
-
         reminder = Reminder.objects.create(
             user_id=ctx.author.id,
             channel_id=ctx.channel_id,
-            message_id=ctx.message.id,
             message=message,
             remind_time=reminder_datetime,
         )

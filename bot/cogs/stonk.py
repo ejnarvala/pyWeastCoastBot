@@ -1,6 +1,6 @@
 import logging
 import attr
-from discord import Colour, Embed, File
+from discord import Colour, Embed, File, slash_command, Option
 from discord.ext import commands
 from lib.stonk.stonk_intervals import StonkIntervals
 from lib.stonk.stonk_periods import StonkPeriods
@@ -17,28 +17,36 @@ class Stonk(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(
-        brief="Look up a stock",
-        usage=f"<ticker>\n<period=1d [{', '.join([p.value for p in StonkPeriods])}]>"
-        f"\n<interval=30m [{', '.join([i.value for i in StonkIntervals])}]",
-        description="Stock price summary for a given period",
+    @slash_command(
+        description="Stock price summary for a given period", debug_guilds=[896903198172930058]
     )
     async def stonk(
-        self, ctx, ticker, period=StonkPeriods.one_day, interval=StonkIntervals.fifteen_minute
+        self,
+        ctx,
+        ticker: Option(str, "Ticker to look up"),
+        period: Option(
+            StonkPeriods, "Period", choices=[p for p in StonkPeriods], default=StonkPeriods.one_day
+        ),
+        interval: Option(
+            StonkIntervals,
+            "Interval",
+            choices=[i for i in StonkIntervals],
+            default=StonkIntervals.fifteen_minute,
+        ),
     ):
+        await ctx.defer()
         stock_info = service.get_stock_info(ticker)
         stock_history = service.get_stock_history(ticker, period, interval)
         response = StonkResponse(stock_info, stock_history)
-
-        await ctx.send(embed=response.to_embed(), file=response.price_chart_file)
+        await ctx.followup.send(embed=response.to_embed(), file=response.price_chart_file)
 
     @stonk.error
     async def stonk_error(self, ctx, error):
         logging.error(f"Crypto Error: {error}")
+        message = f"Stonk Error: {error.original}"
         if isinstance(error.original, NotFound):
-            await ctx.reply("Could not find stonk")
-        else:
-            await ctx.send(f"Stonk Error: {error.original}")
+            message = ("Could not find stonk",)
+        await ctx.respond(message, ephemeral=True)
 
 
 @attr.s
