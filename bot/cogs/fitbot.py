@@ -25,7 +25,6 @@ class Fitbot(commands.Cog):
     @slash_command(
         description="Instructions to authorize fitbot",
         guild_only=True,
-        debug_guilds=[896903198172930058],
     )
     async def fitbot_register(self, ctx):
         url = self.fitbot.auth_url()
@@ -45,7 +44,8 @@ class Fitbot(commands.Cog):
         await ctx.respond(embed=embed, view=view, ephemeral=True)
 
     @slash_command(
-        description="Disconnect from Fitbot", guild_only=True, debug_guilds=[896903198172930058]
+        description="Disconnect from Fitbot", 
+        guild_only=True
     )
     async def fitbot_disconnect(self, ctx):
         user_id = ctx.author.id
@@ -56,7 +56,8 @@ class Fitbot(commands.Cog):
         await ctx.respond("You've been disconnected from Fitbot", ephemeral=True)
 
     @slash_command(
-        description="Weekly fibit stats", guild_only=True, debug_guilds=[896903198172930058]
+        description="Weekly fibit stats",
+        guild_only=True
     )
     async def fitbot_leaderboard(self, ctx):
         guild_id = ctx.guild_id

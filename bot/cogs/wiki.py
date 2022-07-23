@@ -10,7 +10,7 @@ class Wiki(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(description="Search for wikipedia links", debug_guilds=[896903198172930058])
+    @slash_command(description="Search for wikipedia links")
     async def wiki(self, ctx, search_text: Option(str, "Title search term")):
         link = self.search_wiki_articles(search_text)
         if not link:

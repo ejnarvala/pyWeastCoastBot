@@ -45,10 +45,7 @@ class Reminders(commands.Cog):
     async def before_poll(self):
         await self.bot.wait_until_ready()
 
-    @slash_command(
-        description="Set reminders - recommended to specify timezone - delete to cancel",
-        debug_guilds=[896903198172930058],
-    )
+    @slash_command(description="Set reminders - recommended to specify timezone - delete to cancel")
     async def remind_me(
         self,
         ctx,

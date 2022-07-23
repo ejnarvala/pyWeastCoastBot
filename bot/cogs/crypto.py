@@ -2,7 +2,7 @@ import logging
 
 import attr
 import discord
-from discord import Colour, Embed, File
+from discord import Colour, Embed, File, slash_command, Option
 from discord.ext import commands
 from lib.crypto.cg import CoinGeckoClient
 from lib.utils.consts import HexColors
@@ -16,11 +16,8 @@ class Crypto(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @discord.slash_command(
-        description="Crypto coin price summary over the last 24hrs",
-        debug_guilds=[896903198172930058],
-    )
-    async def crypto(self, ctx, search_term: discord.Option(str, "Search term")):
+    @slash_command(description="Crypto coin price summary over the last 24hrs")
+    async def crypto(self, ctx, search_term: Option(str, "Search term")):
         coin_id = client.lookup_coin_id(search_term)
         coin = client.get_coin_market_data(coin_id)
         price_chart = client.get_coin_price_graph_image(coin_id)

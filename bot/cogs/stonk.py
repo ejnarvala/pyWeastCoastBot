@@ -17,9 +17,7 @@ class Stonk(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(
-        description="Stock price summary for a given period", debug_guilds=[896903198172930058]
-    )
+    @slash_command(description="Stock price summary for a given period")
     async def stonk(
         self,
         ctx,

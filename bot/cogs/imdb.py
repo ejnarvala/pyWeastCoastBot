@@ -14,7 +14,7 @@ class IMDB(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(description="Search IMDB by film title", debug_guilds=[896903198172930058])
+    @slash_command(description="Search IMDB by film title")
     async def imdb(
         self,
         ctx,
