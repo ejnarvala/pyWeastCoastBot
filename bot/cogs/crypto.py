@@ -18,11 +18,12 @@ class Crypto(commands.Cog):
 
     @slash_command(description="Crypto coin price summary over the last 24hrs")
     async def crypto(self, ctx, search_term: Option(str, "Search term")):
+        await ctx.defer()
         coin_id = client.lookup_coin_id(search_term)
         coin = client.get_coin_market_data(coin_id)
         price_chart = client.get_coin_price_graph_image(coin_id)
         response = CryptoCoinResponse(coin=coin, price_chart=price_chart)
-        await ctx.respond(embed=response.to_embed(), file=response.price_chart_file)
+        await ctx.followup.send(embed=response.to_embed(), file=response.price_chart_file)
 
     @crypto.error
     async def crypto_error(self, ctx, error):

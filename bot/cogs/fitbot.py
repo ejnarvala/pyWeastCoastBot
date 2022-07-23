@@ -55,6 +55,7 @@ class Fitbot(commands.Cog):
     @slash_command(description="Weekly fibit stats", guild_only=True)
     async def fitbot_leaderboard(self, ctx):
         guild_id = ctx.guild_id
+        await ctx.defer()
         stats = self.fitbot.get_guild_weekly_stats(guild_id)
         user_id_to_username = {}
         for user_id in stats.user_ids:
@@ -62,7 +63,7 @@ class Fitbot(commands.Cog):
             if user and user.name:
                 user_id_to_username[user_id] = user.display_name
         response = WeeklyLeaderboardResponse(stats, user_id_to_username)
-        await ctx.respond(embed=response.to_embed(), file=response.image_file)
+        await ctx.followup.send(embed=response.to_embed(), file=response.image_file)
 
 
 class RegistrationView(View):
