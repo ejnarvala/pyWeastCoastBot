@@ -1,29 +1,39 @@
 import os
+import discord
 import django
-from discord.ext.commands import Bot
 from pyWeastCoastBot import settings as app_settings
 
 import logging
 
-COMMAND_PREFIX_OVERRIDE = os.environ.get("COMMAND_PREFIX_OVERRIDE")
+DEBUG_GUILD = os.environ.get("DEBUG_GUILD")
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
-bot = Bot(command_prefix=COMMAND_PREFIX_OVERRIDE or "/")
+bot_kwargs = dict()
+if DEBUG_GUILD:
+    bot_kwargs["debug_guilds"] = [int(DEBUG_GUILD)]
+logging.info(f"Bot kwargs: {bot_kwargs}")
+bot = discord.Bot(**bot_kwargs)
 
 
 def run():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pyWeastCoastBot.settings")
     django.setup()
+    load_cogs()
     bot.run(BOT_TOKEN)
+
+
+def load_cogs():
+    for file in os.listdir("bot/cogs"):
+        if file.endswith(".py"):
+            name = file[:-3]
+            cog_name = f"bot.cogs.{name}"
+            bot.load_extension(cog_name)
+            logging.info(f"Registered Cog: {cog_name}")
 
 
 @bot.event
 async def on_ready():
     logging.info(f"I am {bot.user.name} (logger)")
-    for file in os.listdir("bot/cogs"):
-        if file.endswith(".py"):
-            name = file[:-3]
-            bot.load_extension(f"bot.cogs.{name}")
 
 
 if __name__ == "__main__":

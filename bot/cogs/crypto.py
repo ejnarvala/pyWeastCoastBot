@@ -1,6 +1,7 @@
 import logging
 
 import attr
+import discord
 from discord import Colour, Embed, File
 from discord.ext import commands
 from lib.crypto.cg import CoinGeckoClient
@@ -15,25 +16,24 @@ class Crypto(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(
-        brief="Look up a coin",
-        usage="<coin>",
+    @discord.slash_command(
         description="Crypto coin price summary over the last 24hrs",
+        debug_guilds=[896903198172930058],
     )
-    async def crypto(self, ctx, coin_search):
-        coin_id = client.lookup_coin_id(coin_search)
+    async def crypto(self, ctx, search_term: discord.Option(str, "Search term")):
+        coin_id = client.lookup_coin_id(search_term)
         coin = client.get_coin_market_data(coin_id)
         price_chart = client.get_coin_price_graph_image(coin_id)
         response = CryptoCoinResponse(coin=coin, price_chart=price_chart)
-        await ctx.send(embed=response.to_embed(), file=response.price_chart_file)
+        await ctx.respond(embed=response.to_embed(), file=response.price_chart_file)
 
     @crypto.error
     async def crypto_error(self, ctx, error):
         logging.error(f"Crypto Error: {error}")
         if isinstance(error.original, NotFound):
-            await ctx.reply("Could not find coin")
+            await ctx.respond("Could not find coin", ephemeral=True)
         else:
-            await ctx.reply(f"Crypto Error: {error.original}")
+            await ctx.respond(f"Crypto Error: {error.original}", ephemeral=True)
 
 
 @attr.s

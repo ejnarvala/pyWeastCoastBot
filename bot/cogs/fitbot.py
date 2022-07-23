@@ -1,12 +1,13 @@
 import logging
-
-from discord import Colour, Embed, File
+from discord import Colour, Embed, Interaction, File, slash_command
 from discord.ext import commands
+from discord.ui import Modal, InputText, View, button
 from fitbit.api import Fitbit
 
 from lib.fitbot.service import FitbotService, GuildWeeklyStats
 from lib.fitbot.config import FitbotConfig
 from lib.utils.consts import HexColors
+from lib.utils.errors import InvalidParameter
 from lib.utils.graph import generate_line_plot_image, generate_line_plot, write_fig_to_tempfile
 from lib.utils.types import hex_to_rgb
 
@@ -21,56 +22,44 @@ class Fitbot(commands.Cog):
         )
         self.fitbot = FitbotService()
 
-    @commands.command(description="Instructions to authorize fitbot")
-    async def fitbot_auth(self, ctx):
+    @slash_command(
+        description="Instructions to authorize fitbot",
+        guild_only=True,
+        debug_guilds=[896903198172930058],
+    )
+    async def fitbot_register(self, ctx):
         url = self.fitbot.auth_url()
         description = f"""
-                1. Click on [this link]({url})
-                2. Check all permissions unless you potentially want to break stuff
-                3. Look at the url & copy the value for `code`
-                4. Call `/fitbot_register <code>`
-            """
+            1. Click on [this link]({url})
+            2. Check all permissions unless you potentially want to break stuff
+            3. Look at the url & copy the value for `code`
+            4. Click 'Submit Code'
+        """
         embed = Embed(
             title="Fitbot Registration",
             url=url,
             description=description,
             color=Colour.from_rgb(*hex_to_rgb(HexColors.FITBIT_BLUE)),
         )
-        await ctx.reply(embed=embed)
+        view = RegistrationView(self.fitbot)
+        await ctx.respond(embed=embed, view=view, ephemeral=True)
 
-    @commands.command(description="Link Fitbit to Fitbot")
-    async def fitbot_register(self, ctx, code):
-        user_id = ctx.message.author.id
-        if not ctx.message.guild:
-            await ctx.reply("Cannot register outside of a server")
-            return
-        guild_id = ctx.message.guild.id
-
-        if self.fitbot.is_user_registered(user_id, guild_id):
-            await ctx.reply("You're already registered!")
-            return
-
-        self.fitbot.store_auth_token(user_id, guild_id, code)
-        await ctx.reply("You've been successfully registered")
-
-    @commands.command(description="Disconnect Fitbit from Fitbot")
+    @slash_command(
+        description="Disconnect from Fitbot", guild_only=True, debug_guilds=[896903198172930058]
+    )
     async def fitbot_disconnect(self, ctx):
-        user_id = ctx.message.user.id
-        if not ctx.message.guild:
-            await ctx.reply("Cannot disconnect outside of a server")
-            return
-        guild_id = ctx.message.guild.id
-
+        user_id = ctx.author.id
+        guild_id = ctx.guild_id
+        logging.info(f"{user_id}, {guild_id}")
         self.fitbot.disconnect_user(user_id, guild_id)
 
-        await ctx.reply("You've been disconnected from Fitbot")
+        await ctx.respond("You've been disconnected from Fitbot", ephemeral=True)
 
-    @commands.command(description="Get Fitbit stats")
+    @slash_command(
+        description="Weekly fibit stats", guild_only=True, debug_guilds=[896903198172930058]
+    )
     async def fitbot_leaderboard(self, ctx):
-        if not ctx.message.guild:
-            await ctx.reply("Command only works within a server")
-            return
-        guild_id = ctx.message.guild.id
+        guild_id = ctx.guild_id
         stats = self.fitbot.get_guild_weekly_stats(guild_id)
         user_id_to_username = {}
         for user_id in stats.user_ids:
@@ -78,12 +67,44 @@ class Fitbot(commands.Cog):
             if user and user.name:
                 user_id_to_username[user_id] = user.display_name
         response = WeeklyLeaderboardResponse(stats, user_id_to_username)
-        await ctx.send(embed=response.to_embed(), file=response.image_file)
+        await ctx.respond(embed=response.to_embed(), file=response.image_file)
 
-    @fitbot_register.error
-    async def fitbot_register_error(self, ctx, error):
+
+class RegistrationView(View):
+    def __init__(self, fitbot) -> None:
+        super().__init__()
+        self.fitbot = fitbot
+
+    @button(label="Submit Code")
+    async def submit_callback(self, button, interaction):
+        await interaction.response.send_modal(SubmitCodeModal(self.fitbot))
+
+
+class SubmitCodeModal(Modal):
+    def __init__(self, fitbot) -> None:
+        super().__init__(title="Fitbot Registration Code")
+        self.fitbot = fitbot
+        self.add_item(InputText(label="code"))
+
+    async def callback(self, interaction):
+        code = self.children[0].value
+        user_id = interaction.message.author.id
+        guild_id = interaction.message.guild.id
+
+        if self.fitbot.is_user_registered(user_id, guild_id):
+            raise InvalidParameter("You're already registered!")
+
+        self.fitbot.store_auth_token(user_id, guild_id, code)
+
+        await interaction.response.send_message(
+            "You've been successfully registered", ephemeral=True
+        )
+
+    async def on_error(self, error, interaction):
         logging.error(f"Fitbot Registration Error: {error}")
-        await ctx.send(f"Fitbot Error: {error.original}")
+        await interaction.response.send_message(
+            f"Fitbot Registration Error: {error}", ephemeral=True
+        )
 
 
 class WeeklyLeaderboardResponse:

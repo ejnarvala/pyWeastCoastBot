@@ -1,6 +1,7 @@
 import logging
 
 from db.models import Reminder
+from discord import slash_command, Option
 from discord.ext import commands, tasks
 from humanize import naturaltime
 from lib.utils.time import parse_utc_datetime, utc_now
@@ -45,29 +46,32 @@ class Reminders(commands.Cog):
     async def before_poll(self):
         await self.bot.wait_until_ready()
 
-    @commands.command(
-        brief="Set reminders",
-        usage="<time> [, message]",
-        help="Times are stored in UTC, specify timezone "
-        "if you are inputting a specific date/time string "
-        "e.g. '9/15/21 3:00 PM EST'. Reminders are polled "
-        "for every 30s. Deleting a remindme command will remove the reminder.",
-        description="Set reminders",
+    # @commands.command(
+    #     brief="Set reminders",
+    #     usage="<time> [, message]",
+    #     help="Times are stored in UTC, specify timezone "
+    #     "if you are inputting a specific date/time string "
+    #     "e.g. '9/15/21 3:00 PM EST'. Reminders are polled "
+    #     "for every 30s. Deleting a remindme command will remove the reminder.",
+    #     description="Set reminders",
+    # )
+    @slash_command(
+        description="Set reminders - recommended to specify timezone - delete to cancel",
+        debug_guilds=[896903198172930058],
     )
-    async def remindme(self, ctx, *args):
-        if not args:
-            return
-        command = " ".join(args).split(",")
-
-        reminder_datetime = parse_utc_datetime(command[0])
+    async def remind_me(
+        self,
+        ctx,
+        time: Option(str, "Time (specify"),
+        message: Option(str, "Optional message to send in reminder") = None,
+    ):
+        reminder_datetime = parse_utc_datetime(time)
         if reminder_datetime < utc_now():
             raise Exception("Parsed time is in the past")
 
-        message = command[1] if len(command) > 1 else None
-
         reminder = Reminder.objects.create(
-            user_id=ctx.message.author.id,
-            channel_id=ctx.message.channel.id,
+            user_id=ctx.author.id,
+            channel_id=ctx.channel_id,
             message_id=ctx.message.id,
             message=message,
             remind_time=reminder_datetime,
@@ -79,12 +83,12 @@ class Reminders(commands.Cog):
         if reminder.message:
             response_message += f"\n> {reminder.message}"
 
-        await ctx.reply(response_message)
+        await ctx.respond(response_message)
 
-    @remindme.error
+    @remind_me.error
     async def remindme_error(self, ctx, error):
         logging.error(f"Remindme Error: {error}")
-        await ctx.reply(f"Sorry, couldn't process reminder: {error.original}")
+        await ctx.respond(f"Sorry, couldn't process reminder: {error.original}", ephemeral=True)
 
 
 def setup(bot):

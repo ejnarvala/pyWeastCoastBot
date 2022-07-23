@@ -22,8 +22,8 @@ class Nba(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    @commands.check(check_in_guild)
+    # @commands.command()
+    # @commands.check(check_in_guild)
     async def nba_wins_pool(self, ctx):
         guild_id = ctx.message.guild.id
         guild_standings = service.guild_standings(guild_id)
@@ -35,8 +35,8 @@ class Nba(commands.Cog):
 
         await ctx.send(embed=response.to_embed(), file=response.wins_graph_file)
 
-    @commands.command()
-    @commands.check(check_in_guild)
+    # @commands.command()
+    # @commands.check(check_in_guild)
     async def nba_wins_pool_teams(self, ctx):
         guild_id = ctx.message.guild.id
         team_breakdown_df = service.guild_team_breakdown(guild_id)

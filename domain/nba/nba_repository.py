@@ -75,7 +75,7 @@ class NbaRepository:
     def games(cls, start_date):
         live_date = None
         for game in cls.client.live_games():
-            live_date = datetime.strptime(game["gameEt"][:10], '%Y-%m-%d')
+            live_date = datetime.strptime(game["gameEt"][:10], "%Y-%m-%d")
             yield NbaGame(
                 id=game["gameId"],
                 date=pd.Timestamp(game["gameEt"]).date().strftime("%Y-%m-%d"),
@@ -83,7 +83,7 @@ class NbaRepository:
                 home_team_score=game["homeTeam"]["score"],
                 status=game["gameStatusText"],
                 visitor_team=cls._build_nba_team_from_live_team(game["awayTeam"]),
-                visitor_team_score=game["awayTeam"]["score"]
+                visitor_team_score=game["awayTeam"]["score"],
             )
         # Use BallDontLie API only for games that aren't on today's scoreboard
         params = BallDontLieParams(start_date=start_date, end_date=live_date - timedelta(days=1))
