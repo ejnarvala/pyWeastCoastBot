@@ -47,4 +47,4 @@ class BallDontLieClient:
     def live_games(self):
         live_response = requests.get(self.NBA_LIVE_URL)
         live_response.raise_for_status()
-        return live_response.json()['scoreboard']['games']
+        return live_response.json()["scoreboard"]["games"]

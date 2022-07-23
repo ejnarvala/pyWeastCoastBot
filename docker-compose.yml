@@ -6,7 +6,6 @@ services:
     env_file: .env
     environment: 
       DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
-      COMMAND_PREFIX_OVERRIDE: //
     command: watchmedo auto-restart -R --debug-force-polling -p "*.py" python run_bot.py
     volumes:
       - .:/app

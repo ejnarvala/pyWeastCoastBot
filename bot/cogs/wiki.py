@@ -1,4 +1,5 @@
 import requests
+from discord import slash_command, Option
 from discord.ext import commands
 
 
@@ -9,11 +10,16 @@ class Wiki(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(brief="Search for wikipedia links")
-    async def wiki(self, ctx, *, search_text):
+    @slash_command(description="Search for wikipedia links")
+    async def wiki(self, ctx, search_text: Option(str, "Title search term")):
         link = self.search_wiki_articles(search_text)
-        message = link or f"Sorry, couldn't find article for '{search_text}'"
-        await ctx.send(message)
+        if not link:
+            raise f"Sorry, couldn't find article for '{search_text}'"
+        await ctx.respond(link)
+
+    @wiki.error()
+    async def wiki_error(self, ctx, error):
+        await ctx.respond(str(error.original), ephemeral=True)
 
     @classmethod
     def search_wiki_articles(cls, search_text):

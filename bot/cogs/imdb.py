@@ -1,9 +1,10 @@
 import logging
 
-from discord import Embed
+from discord import Embed, slash_command, Option
 from discord.ext import commands
 from lib.omdb.client import OmdbClient, OmdbError
 from lib.omdb.imdb_file import ImdbFilm
+from lib.utils.errors import InvalidParameter
 
 
 class IMDB(commands.Cog):
@@ -13,17 +14,29 @@ class IMDB(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(brief="Search IMDB by film title")
-    async def imdb(self, ctx, *, title_search_text):
-        film = self.omdb_client.find_by_title(title_search_text)
-        logging.info(f"Found IMDB entry for search '{title_search_text}': {film}")
-        await ctx.send(embed=self.embed_from_film(film))
+    @slash_command(description="Search IMDB by film title")
+    async def imdb(
+        self,
+        ctx,
+        title_search_text: Option(str, "Title search term") = None,
+        imdb_id: Option(str, "IMDb ID") = None,
+        year: Option(int, "Year") = None,
+    ):
+        if not (title_search_text or imdb_id):
+            raise InvalidParameter("title or IMDb ID required")
+        film = self.omdb_client.find_by_title_or_id(
+            title=title_search_text, imdb_id=imdb_id, year=year
+        )
+        logging.info(
+            f"Found IMDB entry for search title={title_search_text},"
+            f"imdb_id={imdb_id}, year={year}: {film}"
+        )
+        await ctx.respond(embed=self.embed_from_film(film))
 
     @imdb.error
     async def imdb_error(self, ctx, error):
         logging.error(f"IMDB Error: {error}")
-        if isinstance(error.original, OmdbError):
-            await ctx.reply(f"OMDB Error: {error.original}")
+        await ctx.respond(str(error.original), ephemeral=True)
 
     @staticmethod
     def embed_from_film(film: ImdbFilm) -> Embed:

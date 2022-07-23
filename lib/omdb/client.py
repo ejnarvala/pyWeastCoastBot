@@ -1,3 +1,4 @@
+import logging
 from typing import Dict
 
 import requests
@@ -21,14 +22,15 @@ class OmdbClient(object):
         response.raise_for_status()
 
         response_json = response.json()
+        logging.debug(f"OMDB Response: {response_json}")
         if response_json["Response"] == "False":
             raise OmdbError(response_json["Error"])
-
         return response_json
 
     @classmethod
-    def find_by_title(cls, title_search_text) -> ImdbFilm:
-        params = dict(t=title_search_text)
+    def find_by_title_or_id(cls, title, imdb_id, year) -> ImdbFilm:
+        params = dict(t=title, i=imdb_id, y=year)
+        params = {k: v for k, v in params.items() if v}
         response_json = cls._request(params=params)
         return ImdbFilm.from_json(response_json)
 

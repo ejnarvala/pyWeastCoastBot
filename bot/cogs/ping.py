@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 
 
@@ -5,9 +6,9 @@ class Ping(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def ping(self, ctx):
-        await ctx.reply(":ping_pong: pong :ping_pong:")
+    @discord.slash_command(description="pings")
+    async def ping(self, ctx, message: discord.Option(str, "message") = "pong"):
+        await ctx.respond(f":ping_pong: {message} :ping_pong:")
 
 
 def setup(bot):

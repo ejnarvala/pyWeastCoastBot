@@ -17,10 +17,8 @@ class NbaWinsPoolService:
 
     @classmethod
     def current_seasons_games(cls):
-        return list(
-            cls.nba_repo.games(start_date=SEASON_START_DATE_2021)
-        )
-        
+        return list(cls.nba_repo.games(start_date=SEASON_START_DATE_2021))
+
     @classmethod
     def get_guild_user_teams(cls, guild_id):
         user_teams = UserWinPoolTeam.objects.filter(guild_id=guild_id)
@@ -44,7 +42,7 @@ class NbaWinsPoolService:
         return GuildStandings(
             race_plot_df=race_plot_df,
             leaderboard_df=leaderboard_df,
-            nba_scoreboard_df=scoreboard_df
+            nba_scoreboard_df=scoreboard_df,
         )
 
     @classmethod
@@ -239,7 +237,10 @@ class NbaWinsPoolService:
         df = game_data_df
         df["status"] = df["status"].str.strip()
         df["score"] = df.apply(generate_score_str, axis=1).str.strip()
-        todays_games = df[(df["date"].max().month == df["date"].dt.month) & (df["date"].max().day == df["date"].dt.day)]
+        todays_games = df[
+            (df["date"].max().month == df["date"].dt.month)
+            & (df["date"].max().day == df["date"].dt.day)
+        ]
         return todays_games.sort_values(by="status")[["status", "score"]]
 
 
