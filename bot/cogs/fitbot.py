@@ -1,14 +1,15 @@
 import logging
-from discord import Colour, Embed, Interaction, File, slash_command
-from discord.ext import commands
-from discord.ui import Modal, InputText, View, button
-from fitbit.api import Fitbit
+from datetime import datetime
 
-from lib.fitbot.service import FitbotService, GuildWeeklyStats
+from discord import Colour, Embed, File, slash_command
+from discord.ext import commands, tasks
+from discord.ui import InputText, Modal, View, button
+from fitbit.api import Fitbit
 from lib.fitbot.config import FitbotConfig
+from lib.fitbot.service import FitbotService, GuildWeeklyStats
 from lib.utils.consts import HexColors
 from lib.utils.errors import InvalidParameter
-from lib.utils.graph import generate_line_plot_image, generate_line_plot, write_fig_to_tempfile
+from lib.utils.graph import generate_line_plot, write_fig_to_tempfile
 from lib.utils.types import hex_to_rgb
 
 
@@ -21,6 +22,10 @@ class Fitbot(commands.Cog):
             timeout=10,
         )
         self.fitbot = FitbotService()
+        self.post_leaderboard.start()
+
+    def cog_unload(self):
+        self.post_leaderboard.cancel()
 
     @slash_command(
         description="Instructions to authorize fitbot",
@@ -52,18 +57,39 @@ class Fitbot(commands.Cog):
 
         await ctx.respond("You've been disconnected from Fitbot", ephemeral=True)
 
-    @slash_command(description="Weekly fibit stats", guild_only=True)
-    async def fitbot_leaderboard(self, ctx):
-        guild_id = ctx.guild_id
-        await ctx.defer()
+    async def _get_weekly_leaderboard_response(self, guild_id):
         stats = self.fitbot.get_guild_weekly_stats(guild_id)
         user_id_to_username = {}
         for user_id in stats.user_ids:
             user = await self.bot.fetch_user(int(user_id))
             if user and user.name:
                 user_id_to_username[user_id] = user.display_name
-        response = WeeklyLeaderboardResponse(stats, user_id_to_username)
+        return WeeklyLeaderboardResponse(stats, user_id_to_username)
+
+    @slash_command(description="Weekly fibit stats", guild_only=True)
+    async def fitbot_leaderboard(self, ctx):
+        guild_id = ctx.guild_id
+        await ctx.defer()
+        response = self._get_weekly_leaderboard_response(guild_id)
         await ctx.followup.send(embed=response.to_embed(), file=response.image_file)
+
+    @tasks.loop(time=datetime.time(16))
+    async def post_leaderboard(self):
+        logging.info("Posting fitbot leaderboards")
+        for guild_id in self.fitbot.get_registered_guild_ids():
+            guild = await self.bot.fetch_guild(guild_id)
+            for channel in guild.text_channels:
+                if channel.name == "fitbot":
+                    response = self._get_weekly_leaderboard_response(guild_id)
+                    channel.send(embed=response.to_embed(), file=response.image_file)
+
+    @post_leaderboard.before_loop
+    async def before_poll(self):
+        await self.bot.wait_until_ready()
+
+    @post_leaderboard.error
+    async def post_leaderboard_error(self, error):
+        logging.info(f"Error occurred while posting fitbot leaderboard: {error}")
 
 
 class RegistrationView(View):

@@ -97,6 +97,10 @@ class FitbotService:
             distance=cls._get_time_series(client, "distance"),
         )
 
+    @classmethod
+    def get_registered_guild_ids(cls):
+        guild_ids = ThirdPartyAuth.objects.filter(provider=FitbotConfig.provider).values_list('guild_id', flat=True).distinct('guild_id')
+        return list(guild_ids)
 
 @attr.s
 class LeaderboardEntry:
