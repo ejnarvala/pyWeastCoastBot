@@ -7,7 +7,7 @@ import logging
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
-bot = discord.Bot()
+bot = discord.Bot(auto_sync_commands=False)
 
 
 def run():

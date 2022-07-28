@@ -1,7 +1,7 @@
 import logging
 import datetime
 
-from discord import Colour, Embed, File, slash_command
+from discord import Colour, Embed, File, slash_command, TextChannel
 from discord.ext import commands, tasks
 from discord.ui import InputText, Modal, View, button
 from lib.fitbot.service import FitbotService, GuildWeeklyStats
@@ -16,6 +16,7 @@ class Fitbot(commands.Cog):
         self.bot = bot
         self.fitbot = FitbotService()
         self.post_leaderboard.start()
+        logging.info("Fitbot cog started")
 
     def cog_unload(self):
         self.post_leaderboard.cancel()
@@ -69,10 +70,15 @@ class Fitbot(commands.Cog):
     @tasks.loop(time=datetime.time(16))
     async def post_leaderboard(self):
         logging.info("Posting fitbot leaderboards")
-        for guild_id in self.fitbot.get_registered_guild_ids():
-            guild = await self.bot.fetch_guild(guild_id)
-            for channel in guild.text_channels:
-                if channel.name == "fitbot":
+        guild_ids = self.fitbot.get_registered_guild_ids()
+        logging.info(f"Guild ids: {guild_ids}")
+        for guild_id in guild_ids:
+            guild = await self.bot.fetch_guild(int(guild_id))
+            channels = guild.fetch_channels()
+            logging.info(f"Guild id: {guild_id}, channels: {channels}")
+            for channel in channels:
+                if isinstance(channel, TextChannel) and channel.name == "fitbot":
+                    logging.info(f"Posting to guild {guild.name}, channel {channel.name}")
                     response = await self._get_weekly_leaderboard_response(guild_id)
                     channel.send(embed=response.to_embed(), file=response.image_file)
 
