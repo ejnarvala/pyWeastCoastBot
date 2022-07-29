@@ -5,16 +5,14 @@ from pyWeastCoastBot import settings as app_settings
 
 import logging
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-
-bot = discord.Bot(auto_sync_commands=False)
+bot = discord.Bot()
 
 
 def run():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pyWeastCoastBot.settings")
     django.setup()
     load_cogs()
-    bot.run(BOT_TOKEN)
+    bot.run(app_settings.BOT_TOKEN)
 
 
 def load_cogs():
