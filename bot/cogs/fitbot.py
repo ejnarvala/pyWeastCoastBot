@@ -67,7 +67,7 @@ class Fitbot(commands.Cog):
         response = await self._get_weekly_leaderboard_response(guild_id)
         await ctx.followup.send(embed=response.to_embed(), file=response.image_file)
 
-    @tasks.loop(time=datetime.time(17, 20))
+    @tasks.loop(time=datetime.time(17, 25))
     async def post_leaderboard(self):
         logging.info("Posting fitbot leaderboards")
         guild_ids = self.fitbot.get_registered_guild_ids()
@@ -80,7 +80,7 @@ class Fitbot(commands.Cog):
                 if isinstance(channel, TextChannel) and channel.name == "fitbot":
                     logging.info(f"Posting to guild {guild.name}, channel {channel.name}")
                     response = await self._get_weekly_leaderboard_response(guild_id)
-                    channel.send(embed=response.to_embed(), file=response.image_file)
+                    await channel.send(embed=response.to_embed(), file=response.image_file)
 
     @post_leaderboard.before_loop
     async def before_poll(self):
