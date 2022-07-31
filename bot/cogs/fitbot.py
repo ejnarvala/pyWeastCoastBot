@@ -74,7 +74,7 @@ class Fitbot(commands.Cog):
         logging.info(f"Guild ids: {guild_ids}")
         for guild_id in guild_ids:
             guild = await self.bot.fetch_guild(int(guild_id))
-            channels = guild.fetch_channels()
+            channels = await guild.fetch_channels()
             logging.info(f"Guild id: {guild_id}, channels: {channels}")
             for channel in channels:
                 if isinstance(channel, TextChannel) and channel.name == "fitbot":
