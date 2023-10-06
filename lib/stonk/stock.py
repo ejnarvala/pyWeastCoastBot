@@ -47,6 +47,8 @@ class StockHistory:
 
     high = attr.ib()
     low = attr.ib()
+    first_open = attr.ib()
+    last_close = attr.ib()
     market_change = attr.ib()
     market_change_percentage = attr.ib()
     start_date = attr.ib()
@@ -75,6 +77,8 @@ class StockHistory:
         return StockHistory(
             high=history["High"].max(),
             low=history["Low"].min(),
+            first_open=first_open,
+            last_close=last_close,
             market_change=market_change,
             market_change_percentage=market_change_percentage,
             start_date=first_entry.name.to_pydatetime(),

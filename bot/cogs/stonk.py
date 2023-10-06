@@ -84,6 +84,14 @@ class StonkResponse:
         return format_money(self.stock_history.high)
 
     @property
+    def _first_open(self):
+        return format_money(self.stock_history.first_open)
+
+    @property
+    def _last_close(self):
+        return format_money(self.stock_history.last_close)
+
+    @property
     def _title(self):
         return f"{self.stock_info.name} (${self.stock_info.symbol})"
 
@@ -118,9 +126,11 @@ class StonkResponse:
         )
         embed.set_image(url="attachment://image.png")
         embed.set_thumbnail(url=self._thumbnail)
-        embed.add_field(name="Current Price", value=self._market_price, inline=False)
-        embed.add_field(name="Low", value=self._low, inline=True)
+        embed.add_field(name="Current Price", value=self._market_price, inline=True)
         embed.add_field(name="High", value=self._high, inline=True)
+        embed.add_field(name="Low", value=self._low, inline=True)
+        embed.add_field(name="Open", value=self._first_open, inline=True)
+        embed.add_field(name="Close", value=self._last_close, inline=True)
         embed.add_field(name="Change", value=self._market_change, inline=True)
         embed.add_field(name="When", value=self._dates, inline=False)
 
