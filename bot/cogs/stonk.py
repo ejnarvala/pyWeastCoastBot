@@ -40,7 +40,7 @@ class Stonk(commands.Cog):
 
     @stonk.error
     async def stonk_error(self, ctx, error):
-        logging.error(f"Crypto Error: {error}")
+        logging.error(f"Stonk Error: {error}")
         message = f"Stonk Error: {error.original}"
         if isinstance(error.original, NotFound):
             message = ("Could not find stonk",)
@@ -62,8 +62,8 @@ class StonkResponse:
         start = self.stock_history.start_date
         end = self.stock_history.end_date
         if is_same_day(start, end):
-            return f"{start:%Y-%m-%d, %I:%M %p} - {end:%I:%M %p}"
-        return f"{start:%Y-%m-%d, %H:%M} - {end:%Y-%m-%d, %H:%M}"
+            return f"{start:%m/%d/%Y, %I:%M %p} - {end:%I:%M %p}"
+        return f"{start:%m/%d/%Y, %H:%M} - {end:%m/%d/%Y, %H:%M}"
 
     @property
     def _market_price(self):
@@ -71,11 +71,9 @@ class StonkResponse:
 
     @property
     def _market_change(self):
-        return format_money(self.stock_history.market_change)
-
-    @property
-    def _market_change_percentage(self):
-        return format_percent(self.stock_history.market_change_percentage)
+        price_change = format_money(self.stock_history.market_change)
+        percent_change = format_percent(self.stock_history.market_change_percentage)
+        return f"{price_change} ({percent_change})"
 
     @property
     def _low(self):
@@ -87,7 +85,7 @@ class StonkResponse:
 
     @property
     def _title(self):
-        return f"{self.stock_info.name} - ${self.stock_info.symbol}"
+        return f"{self.stock_info.name} (${self.stock_info.symbol})"
 
     @property
     def _url(self):
@@ -120,13 +118,10 @@ class StonkResponse:
         )
         embed.set_image(url="attachment://image.png")
         embed.set_thumbnail(url=self._thumbnail)
-        embed.add_field(name="Market Price", value=self._market_price, inline=False)
+        embed.add_field(name="Current Price", value=self._market_price, inline=False)
         embed.add_field(name="Low", value=self._low, inline=True)
         embed.add_field(name="High", value=self._high, inline=True)
-        embed.add_field(name="Market Change", value=self._market_change, inline=False)
-        embed.add_field(
-            name="Percent Market Change", value=self._market_change_percentage, inline=False
-        )
+        embed.add_field(name="Change", value=self._market_change, inline=True)
         embed.add_field(name="When", value=self._dates, inline=False)
 
         return embed

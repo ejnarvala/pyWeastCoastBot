@@ -22,7 +22,7 @@ class StockInfo:
     @staticmethod
     def from_yf_ticker_info(ticker_info):
         symbol = ticker_info["symbol"]
-        price_current = ticker_info["regularMarketPrice"]
+        price_current = ticker_info["currentPrice"]
         if not price_current:
             raise ValueError(f"Invalid Stock: {symbol}")
         price_open = ticker_info["open"]
@@ -35,8 +35,8 @@ class StockInfo:
             industry=ticker_info["industry"],
             price_current=price_current,
             price_open=price_open,
-            price_last_low=ticker_info["regularMarketDayLow"],
-            price_last_high=ticker_info["regularMarketDayHigh"],
+            price_last_low=ticker_info["dayLow"],
+            price_last_high=ticker_info["dayHigh"],
             market_change=market_change,
             market_change_percentage=market_change_percentage,
         )
