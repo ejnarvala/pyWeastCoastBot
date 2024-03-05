@@ -12,14 +12,13 @@ class Wiki(commands.Cog):
 
     @slash_command(description="Search for wikipedia links")
     async def wiki(self, ctx, search_text: Option(str, "Title search term")):
-        link = self.search_wiki_articles(search_text)
-        if not link:
-            raise f"Sorry, couldn't find article for '{search_text}'"
-        await ctx.respond(link)
-
-    @wiki.error()
-    async def wiki_error(self, ctx, error):
-        await ctx.respond(str(error.original), ephemeral=True)
+        try:
+            link = self.search_wiki_articles(search_text)
+            if not link:
+                raise f"Sorry, couldn't find article for '{search_text}'"
+            await ctx.respond(link)
+        except Exception as error: 
+            await ctx.respond(str(error.original), ephemeral=True)
 
     @classmethod
     def search_wiki_articles(cls, search_text):
