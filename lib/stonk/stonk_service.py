@@ -24,6 +24,7 @@ class StonkService:
     def get_stock_info(self, ticker):
         ticker = yf.Ticker(ticker)
         ticker_info = self._get_cached_info(ticker, ttl_hash=self.ttl_hash())
+        print(f"got ticker info: {ticker_info}")
         return StockInfo.from_yf_ticker_info(ticker_info)
 
     def get_stock_history(self, ticker, period, interval):

@@ -22,7 +22,7 @@ class StockInfo:
     @staticmethod
     def from_yf_ticker_info(ticker_info):
         symbol = ticker_info["symbol"]
-        price_current = ticker_info["currentPrice"]
+        price_current = ticker_info.get("currentPrice")
         if not price_current:
             raise ValueError(f"Invalid Stock: {symbol}")
         price_open = ticker_info["open"]
