@@ -22,21 +22,30 @@ class StockInfo:
     @staticmethod
     def from_yf_ticker_info(ticker_info):
         symbol = ticker_info["symbol"]
-        price_current = ticker_info.get("currentPrice")
-        if not price_current:
-            raise ValueError(f"Invalid Stock: {symbol}")
-        price_open = ticker_info["open"]
-        market_change = price_current - price_open
-        market_change_percentage = get_percent_change(current=price_current, previous=price_open)
+        try:
+            price_current = (
+                ticker_info.get("currentPrice") or 
+                ticker_info.get("postMarketPrice") or 
+                ticker_info.get("regularMarketPrice")
+            )
+            price_open = ticker_info.get("open") or ticker_info.get("regularMarketOpen")
+            market_change = price_current - price_open
+            market_change_percentage = get_percent_change(current=price_current, previous=price_open)
+            name = ticker_info.get("shortName") or ticker_info.get("longName")
+            industry = ticker_info.get("industry", "")
+            price_last_low = ticker_info.get("dayLow") or ticker_info("regularMarketDayLow")
+            price_last_high = ticker_info.get("dayHigh") or ticker_info("regularMarketDayHigh")
+        except Exception as e:
+            raise ValueError(f"Invalid Stock: {symbol}") from e
 
         return StockInfo(
-            name=ticker_info["shortName"],
+            name=name,
             symbol=symbol,
-            industry=ticker_info["industry"],
+            industry=industry,
             price_current=price_current,
             price_open=price_open,
-            price_last_low=ticker_info["dayLow"],
-            price_last_high=ticker_info["dayHigh"],
+            price_last_low=price_last_low,
+            price_last_high=price_last_high,
             market_change=market_change,
             market_change_percentage=market_change_percentage,
         )
