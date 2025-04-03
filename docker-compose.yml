@@ -34,7 +34,7 @@ services:
       poetry run python manage.py migrate db
       "
     volumes:
-      - .:/app
+      - ./db/migrations:/app/db/migrations
     depends_on:
       - db
 volumes:
