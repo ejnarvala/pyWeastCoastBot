@@ -22,4 +22,5 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 **/*.example
+.venv
 README.md

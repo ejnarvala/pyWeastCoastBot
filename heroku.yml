@@ -7,4 +7,4 @@ build:
 release:
   image: worker
   command:
-    - poetry run python manage.py migrate db
+    - uv run python manage.py migrate db
