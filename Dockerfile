@@ -11,14 +11,13 @@ WORKDIR /app
 
 # Copy project files
 COPY pyproject.toml uv.lock /app/
-COPY bin/migrate-and-start.sh /app/migrate-and-start.sh
-RUN chmod +x /app/migrate-and-start.sh
 
 
 # Install dependencies
 RUN uv sync --frozen && rm -rf $UV_CACHE_DIR
 
 COPY . .
+RUN chmod +x /app/bin/migrate-and-start.sh
 
 ENV DJANGO_ALLOW_ASYNC_UNSAFE=true
 ENV PATH="/app/.venv/bin:$PATH"
