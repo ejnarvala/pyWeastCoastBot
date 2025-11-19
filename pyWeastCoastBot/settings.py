@@ -10,7 +10,24 @@ def get(key):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-DATABASES = {"default": dj_database_url.config(conn_max_age=600)}
+# Timezone settings
+USE_TZ = True
+TIME_ZONE = "UTC"
+
+# Database configuration with SQLite fallback
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {"default": dj_database_url.config(conn_max_age=600)}
+else:
+    # Default to SQLite for local/Raspberry Pi deployments
+    # Use /app/data directory in Docker, or local directory otherwise
+    db_dir = "/app/data" if os.path.exists("/app/data") else os.path.dirname(BASE_DIR)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(db_dir, "db.sqlite3"),
+        }
+    }
 
 INSTALLED_APPS = ("bot", "db", "lib", "domain")
 

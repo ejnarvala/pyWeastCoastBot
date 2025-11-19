@@ -1,0 +1,14 @@
+services:
+  bot:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+      - ./db/migrations:/app/db/migrations
+    command: >-
+      bash -c "
+      python manage.py makemigrations db && 
+      python manage.py migrate db &&
+      uv run python run_bot.py
+      "
