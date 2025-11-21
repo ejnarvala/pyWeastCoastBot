@@ -23,6 +23,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -46,6 +49,7 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -53,11 +57,22 @@ jobs:
 
       - name: Publish image summary
         run: |
+          # Extract the full image reference including tag and digest from build outputs
+          # Since we are using raw 'latest', we can reconstruct the primary tag easily.
+          # However, meta action outputs useful info we can leverage.
+          
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           TAG="latest"
-          echo "## Docker Image Published" >> "$GITHUB_STEP_SUMMARY"
+          PACKAGE_URL="https://github.com/${{ github.repository }}/pkgs/container/pyweastcoastbot"
+
+          echo "## :whale: Docker Image Published" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Image: `$IMAGE:$TAG`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Registry: ${{ env.REGISTRY }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Image:** \`$IMAGE:$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Registry:** ${{ env.REGISTRY }}" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "[View image in GHCR](https://github.com/${{ github.repository_owner }}/packages/container/pyweastcoastbot)" >> "$GITHUB_STEP_SUMMARY"
+          echo ":link: [View Package on GitHub]($PACKAGE_URL)" >> "$GITHUB_STEP_SUMMARY"
+          
+          echo "### Tags" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.meta.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
