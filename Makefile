@@ -33,7 +33,7 @@ clean:
 wipe-docker:
 	docker compose down -v
 	docker compose -f compose.yml down -v
-	docker compose -f docker-compose.postgres.yml down -v
+	docker compose -f compose.postgres.yml down -v
 
 migrate-gen:
 	@if [ -z "$(MSG)" ]; then echo "Error: MSG is not set. Usage: make migrate-gen MSG=\"message\""; exit 1; fi

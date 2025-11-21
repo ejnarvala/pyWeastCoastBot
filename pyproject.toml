@@ -2,7 +2,7 @@
 name = "pyweastcoastbot"
 version = "0.2.0"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "aiosqlite",
     "alembic",
@@ -15,7 +15,7 @@ dependencies = [
     "kaleido",
     "pandas>=2.3.3",
     "plotly>=5.2.1",
-    "py-cord==2.5.0",
+    "py-cord>=2.7.0rc2",
     "pycoingecko>=2.2.0",
     "python-dateutil",
     "python-dotenv",
@@ -23,7 +23,7 @@ dependencies = [
     "ruff",
     "sqlmodel",
     "table2ascii",
-    "yfinance"
+    "yfinance",
 ]
 
 [project.scripts]

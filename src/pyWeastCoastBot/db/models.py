@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
+from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel, UniqueConstraint
 
 
@@ -10,7 +11,7 @@ class Reminder(SQLModel, table=True):
     channel_id: str
     message_id: str
     message: Optional[str] = Field(default=None)
-    remind_time: datetime
+    remind_time: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
 
     def __str__(self) -> str:
         return f"Reminder({self.remind_time})"
@@ -26,5 +27,8 @@ class ThirdPartyAuth(SQLModel, table=True):
     access_token: str
     refresh_token: str
     scope: str
-    expires_at: datetime
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    expires_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
