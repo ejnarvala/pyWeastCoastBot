@@ -7,8 +7,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get(key: str) -> str | None:
-    return os.environ.get(key)
+def get(key: str, default: str | None = None) -> str | None:
+    return os.environ.get(key, default)
+
+
+def get_bool(key: str, default: bool = False) -> bool:
+    value = get(key)
+    if value is None:
+        return default
+    return value.lower() == "true"
 
 
 # Configuration Constants
@@ -16,11 +23,11 @@ OMDB_API_SECRET = get("OMDB_API_SECRET")
 FITBIT_CLIENT_ID = get("FITBIT_CLIENT_ID")
 FITBIT_CLIENT_SECRET = get("FITBIT_CLIENT_SECRET")
 BOT_TOKEN = get("BOT_TOKEN")
-DEBUG = get("DEBUG").lower() == "true"
-LOGGING_FORMAT_TIME_ENABLED = get("LOGGING_FORMAT_TIME_ENABLED", "true").lower() != "false"
-LOGGING_FORMAT_NAME_ENABLED = get("LOGGING_FORMAT_NAME_ENABLED", "true").lower() != "false"
-LOGGING_FORMAT_LEVEL_ENABLED = get("LOGGING_FORMAT_LEVEL_ENABLED", "true").lower() != "false"
-LOGGING_LEVEL = (get("LOGGING_LEVEL") or "INFO").upper()
+DEBUG = get_bool("DEBUG", False)
+LOGGING_FORMAT_TIME_ENABLED = get_bool("LOGGING_FORMAT_TIME_ENABLED", True)
+LOGGING_FORMAT_NAME_ENABLED = get_bool("LOGGING_FORMAT_NAME_ENABLED", True)
+LOGGING_FORMAT_LEVEL_ENABLED = get_bool("LOGGING_FORMAT_LEVEL_ENABLED", True)
+LOGGING_LEVEL = get("LOGGING_LEVEL", "INFO").upper()
 # Logging Configuration
 
 log_format = ""
