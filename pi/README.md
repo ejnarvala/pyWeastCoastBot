@@ -6,6 +6,8 @@
 - User has sudo access
 - Git repository cloned to access configuration files
 
+This has been tested with a raspberry pi zero 2 W, running Raspberry Pi OS Lite (Bookworm 64)
+
 ### Installation
 
 #### 1. Set up deployment directory
@@ -104,18 +106,3 @@ sudo systemctl stop pyweastcoastbot
 - Logs are available via journald and Docker logging
 - Compatible with 64-bit Raspberry Pi OS; ARMv7 images work on Pi Zero 2 W
 
-
-### Troubleshooting
-
-
-#### Kaleido issues
-If you're running on a lite version of Raspberry Pi OS, you may encounter issues with Kaleido requiring Chrome:
-```bash
-Kaleido requires Google Chrome to be installed.
-```
-
-Fix: Install Chromium
-
-```bash
-sudo apt install -y chromium
-```

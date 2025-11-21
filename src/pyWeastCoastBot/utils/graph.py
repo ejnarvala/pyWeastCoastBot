@@ -1,3 +1,4 @@
+import io
 import tempfile
 
 import matplotlib.dates as mdates
@@ -127,8 +128,8 @@ def generate_line_plot_image(df, x, y, **kwargs):
 
 
 def write_fig_to_tempfile(fig):
-    file = tempfile.TemporaryFile()
-    fig.savefig(file, format="png", transparent=True, dpi=100)
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", transparent=True, dpi=100)
     plt.close(fig)
-    file.seek(0)
-    return file
+    buf.seek(0)
+    return buf
