@@ -22,8 +22,8 @@ sudo chown $USER:$USER /opt/pyweastcoastbot
 From the repository root, copy the required files:
 
 ```bash
-cp pi/compose.rpi.yml /opt/pyweastcoastbot/compose.yml
-cp pi/pyweastcoastbot.service /tmp/pyweastcoastbot.service
+cp /pi/compose.rpi.yml /opt/pyweastcoastbot/compose.yml
+cp /pi/pyweastcoastbot.service /tmp/pyweastcoastbot.service
 ```
 
 #### 3. Create environment file
@@ -32,8 +32,8 @@ Create `/opt/pyweastcoastbot/.env` with your bot's configuration:
 
 ```bash
 cat > /opt/pyweastcoastbot/.env << 'EOF'
-BOT_TOKEN=your_bot_token_here
-API_KEY=your_api_key_here
+BOT_TOKEN=<your_bot_token_here>
+API_KEY=<your_api_key_here>
 DEBUG=false
 EOF
 ```
@@ -43,7 +43,7 @@ EOF
 #### 4. Install systemd service
 
 ```bash
-sudo cp /tmp/pyweastcoastbot.service /etc/systemd/system/
+sudo cp /pi/pyweastcoastbot.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable pyweastcoastbot
 sudo systemctl start pyweastcoastbot
@@ -79,13 +79,7 @@ docker compose -f /opt/pyweastcoastbot/compose.yml logs -f
 
 #### Manual updates
 
-Watchtower automatically checks every 5 minutes for image updates. To manually update:
-
-```bash
-cd /opt/pyweastcoastbot
-docker compose pull
-docker compose up -d
-```
+Watchtower automatically checks every 5 minutes for image updates. To manually update, restart the service or manage it directly with docker referencing the compose file in /opt/pyweastcoastbot/compose.yml
 
 #### Restart service
 

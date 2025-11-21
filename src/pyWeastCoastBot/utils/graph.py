@@ -1,5 +1,4 @@
 import io
-import tempfile
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt

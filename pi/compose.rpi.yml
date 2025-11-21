@@ -5,16 +5,16 @@ services:
     restart: unless-stopped
     env_file: .env
 
-  # watchtower:
-  #   image: containrrr/watchtower:latest
-  #   restart: unless-stopped
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     # Force Watchtower to use Docker API version 1.52
-  #     - DOCKER_API_VERSION=1.52
-  #   command:
-  #     - --cleanup
-  #     - --interval
-  #     - "300"
-  #     - pyweastcoastbot
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # Force Watchtower to use Docker API version 1.52
+      - DOCKER_API_VERSION=1.52
+    command:
+      - --cleanup
+      - --interval
+      - "300"
+      - pyweastcoastbot
