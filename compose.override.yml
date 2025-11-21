@@ -5,8 +5,8 @@ services:
       - ./src/pyWeastCoastBot/db/migrations:/app/src/pyWeastCoastBot/db/migrations
     stop_grace_period: 30s
     # not currently working - using manual restart for now
-    # develop:
-    #   watch:
-    #     - path: src
-    #       action: sync+restart
-    #       target: /app/src
+    develop:
+      watch:
+        - path: src
+          action: sync+restart
+          target: /app/src
