@@ -31,4 +31,4 @@ def load_cogs():
 
 @bot.event
 async def on_ready():
-    logging.info(f"I am {bot.user.name} (logger)")
+    logging.info(f"I am {bot.user.name}.")
