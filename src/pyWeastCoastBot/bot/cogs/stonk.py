@@ -33,6 +33,7 @@ class Stonk(commands.Cog):
         ),
     ):
         await ctx.defer()
+        logging.info(f"Fetching stonk data for {ticker}")
         stock_info = service.get_stock_info(ticker)
         stock_history = service.get_stock_history(ticker, period, interval)
         response = StonkResponse(stock_info, stock_history)

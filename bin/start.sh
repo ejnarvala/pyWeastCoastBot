@@ -12,7 +12,7 @@ echo "Starting up..."
 # Create migrations for 'db' app
 # In production, we usually don't run makemigrations, but keeping it per existing workflow
 echo "Running migrate (alembic upgrade head)..."
-uv run alembic -c pyproject.toml upgrade head
+alembic -c pyproject.toml upgrade head
 
 echo "Starting Bot..."
 exec pyweastcoastbot

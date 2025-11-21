@@ -3,8 +3,10 @@ services:
     # Mount migrations so they are persisted to host
     volumes:
       - ./src/pyWeastCoastBot/db/migrations:/app/src/pyWeastCoastBot/db/migrations
-    develop:
-      watch:
-        - path: src
-          action: sync+restart
-          target: /app/src
+    stop_grace_period: 30s
+    # not currently working - using manual restart for now
+    # develop:
+    #   watch:
+    #     - path: src
+    #       action: sync+restart
+    #       target: /app/src

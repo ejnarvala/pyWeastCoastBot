@@ -1,5 +1,8 @@
 # Use a Python image with uv pre-installed
-FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+
+# Install Dependencies
+RUN apt-get update && apt-get install -y chromium
 
 WORKDIR /app
 
