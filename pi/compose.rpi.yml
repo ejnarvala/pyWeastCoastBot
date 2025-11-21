@@ -4,6 +4,8 @@ services:
     container_name: pyweastcoastbot
     restart: unless-stopped
     env_file: .env
+    volumes:
+      - bot_data:/app/data
 
   watchtower:
     image: containrrr/watchtower:latest
@@ -18,3 +20,6 @@ services:
       - --interval
       - "300"
       - pyweastcoastbot
+
+volumes:
+  bot_data:

@@ -22,6 +22,28 @@ class Reminders(commands.Cog):
     def format_remind_time(remind_time):
         return naturaltime(remind_time, future=True, minimum_unit="seconds", when=utc_now())
 
+    def format_reminders_list(self, reminders, include_user=False):
+        """Format a list of reminders for display.
+
+        Args:
+            reminders: List of Reminder objects to format
+            include_user: If True, include user mention in each reminder line
+
+        Returns:
+            Formatted string with all reminders
+        """
+        response = ""
+        for i, reminder in enumerate(reminders, 1):
+            time_str = self.format_remind_time(reminder.remind_time)
+            if include_user:
+                response += f"{i}. <@{reminder.user_id}> - {time_str}"
+            else:
+                response += f"{i}. {time_str}"
+            if reminder.message:
+                response += f"\n   > {reminder.message}"
+            response += "\n\n"
+        return response
+
     @tasks.loop(seconds=30)
     async def poll_for_reminder(self):
         try:
@@ -68,6 +90,7 @@ class Reminders(commands.Cog):
 
         reminder = Reminder(
             user_id=str(ctx.author.id),
+            guild_id=str(ctx.guild_id),
             channel_id=str(ctx.channel_id),
             message=message,
             message_id=str(ctx.interaction.id),  # Using interaction ID as message ID placeholder
@@ -93,6 +116,49 @@ class Reminders(commands.Cog):
         # Handle InvokeError wrapping the actual exception
         original_error = getattr(error, "original", error)
         await ctx.respond(f"Sorry, couldn't process reminder: {original_error}", ephemeral=True)
+
+    @slash_command(description="List your active reminders in this server")
+    async def my_reminders(self, ctx):
+        await ctx.defer(ephemeral=True)
+        logging.info(f"List reminders called by user: {ctx.author.id} in guild: {ctx.guild_id}")
+
+        async for session in get_session():
+            stmt = (
+                select(Reminder)
+                .where(Reminder.user_id == str(ctx.author.id))
+                .where(Reminder.guild_id == str(ctx.guild_id))
+                .order_by(Reminder.remind_time)
+            )
+            result = await session.exec(stmt)
+            reminders = result.all()
+
+        if not reminders:
+            await ctx.followup.send("You have no active reminders in this server.", ephemeral=True)
+            return
+
+        response = f"**Your Active Reminders in This Server ({len(reminders)}):**\n\n"
+        response += self.format_reminders_list(reminders, include_user=False)
+
+        await ctx.followup.send(response, ephemeral=True)
+
+    @slash_command(description="List all active reminders in this server")
+    async def all_reminders(self, ctx):
+        await ctx.defer()
+        logging.info(f"Server reminders called by user: {ctx.author.id} in guild: {ctx.guild_id}")
+
+        async for session in get_session():
+            stmt = select(Reminder).where(Reminder.guild_id == str(ctx.guild_id)).order_by(Reminder.remind_time)
+            result = await session.exec(stmt)
+            reminders = result.all()
+
+        if not reminders:
+            await ctx.followup.send("There are no active reminders in this server.")
+            return
+
+        response = f"**All Active Reminders in This Server ({len(reminders)}):**\n\n"
+        response += self.format_reminders_list(reminders, include_user=True)
+
+        await ctx.followup.send(response)
 
 
 def setup(bot):

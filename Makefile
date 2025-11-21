@@ -37,10 +37,14 @@ wipe-docker:
 
 migrate-gen:
 	@if [ -z "$(MSG)" ]; then echo "Error: MSG is not set. Usage: make migrate-gen MSG=\"message\""; exit 1; fi
+	@echo "Ensuring database is up to date for migration generation..."
+	@uv run alembic -c pyproject.toml upgrade head 2>/dev/null || echo "Note: Database may not exist yet, continuing..."
 	uv run alembic -c pyproject.toml revision --autogenerate -m "$(MSG)"
 
 migrate-gen-docker:
 	@if [ -z "$(MSG)" ]; then echo "Error: MSG is not set. Usage: make migrate-gen-docker MSG=\"message\""; exit 1; fi
+	@echo "Ensuring database is up to date for migration generation..."
+	@docker compose run --rm bot alembic -c pyproject.toml upgrade head 2>/dev/null || echo "Note: Database may not exist yet, continuing..."
 	docker compose run --rm bot alembic -c pyproject.toml revision --autogenerate -m "$(MSG)"
 
 migrate-up:

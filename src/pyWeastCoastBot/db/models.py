@@ -8,6 +8,7 @@ from sqlmodel import Field, SQLModel, UniqueConstraint
 class Reminder(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: str
+    guild_id: str
     channel_id: str
     message_id: str
     message: Optional[str] = Field(default=None)
