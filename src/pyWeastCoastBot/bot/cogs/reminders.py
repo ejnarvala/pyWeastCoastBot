@@ -1,6 +1,7 @@
 import logging
 
 from discord import Option, slash_command
+from discord.commands import SlashCommandGroup
 from discord.ext import commands, tasks
 from humanize import naturaltime
 from sqlmodel import select
@@ -17,6 +18,8 @@ class Reminders(commands.Cog):
 
     def cog_unload(self):
         self.poll_for_reminder.cancel()
+
+    reminders = SlashCommandGroup("reminders", "View reminders")
 
     @staticmethod
     def format_remind_time(remind_time):
@@ -75,7 +78,7 @@ class Reminders(commands.Cog):
     async def before_poll(self):
         await self.bot.wait_until_ready()
 
-    @slash_command(description="Set reminders - recommended to specify timezone - delete to cancel")
+    @slash_command(description="Set a reminder - recommended to specify timezone")
     async def remind_me(
         self,
         ctx,
@@ -111,13 +114,13 @@ class Reminders(commands.Cog):
         await ctx.followup.send(response_message)
 
     @remind_me.error
-    async def remindme_error(self, ctx, error):
+    async def remind_me_error(self, ctx, error):
         logging.error(f"Remindme Error: {error}")
         # Handle InvokeError wrapping the actual exception
         original_error = getattr(error, "original", error)
         await ctx.respond(f"Sorry, couldn't process reminder: {original_error}", ephemeral=True)
 
-    @slash_command(description="List your active reminders in this server")
+    @reminders.command(name="mine", description="List your active reminders in this server")
     async def my_reminders(self, ctx):
         await ctx.defer(ephemeral=True)
         logging.info(f"List reminders called by user: {ctx.author.id} in guild: {ctx.guild_id}")
@@ -141,7 +144,7 @@ class Reminders(commands.Cog):
 
         await ctx.followup.send(response, ephemeral=True)
 
-    @slash_command(description="List all active reminders in this server")
+    @reminders.command(name="all", description="List all active reminders in this server")
     async def all_reminders(self, ctx):
         await ctx.defer()
         logging.info(f"Server reminders called by user: {ctx.author.id} in guild: {ctx.guild_id}")

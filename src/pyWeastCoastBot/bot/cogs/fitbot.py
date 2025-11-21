@@ -1,7 +1,8 @@
 import datetime
 import logging
 
-from discord import Colour, Embed, File, TextChannel, slash_command
+from discord import Colour, Embed, File, TextChannel
+from discord.commands import SlashCommandGroup
 from discord.ext import commands, tasks
 from discord.ui import InputText, Modal, View, button
 
@@ -22,10 +23,9 @@ class Fitbot(commands.Cog):
     def cog_unload(self):
         self.post_leaderboard.cancel()
 
-    @slash_command(
-        description="Instructions to authorize fitbot",
-        guild_only=True,
-    )
+    fitbot = SlashCommandGroup("fitbot", "Fitbit integration commands", guild_only=True)
+
+    @fitbot.command(name="register", description="Instructions to authorize fitbot")
     async def fitbot_register(self, ctx):
         url = self.fitbot.auth_url()
         description = f"""
@@ -43,7 +43,7 @@ class Fitbot(commands.Cog):
         view = RegistrationView(self.fitbot)
         await ctx.respond(embed=embed, view=view, ephemeral=True)
 
-    @slash_command(description="Disconnect from Fitbot", guild_only=True)
+    @fitbot.command(name="disconnect", description="Disconnect from Fitbot")
     async def fitbot_disconnect(self, ctx):
         user_id = ctx.author.id
         guild_id = ctx.guild_id
@@ -61,7 +61,7 @@ class Fitbot(commands.Cog):
                 user_id_to_username[user_id] = user.display_name
         return WeeklyLeaderboardResponse(stats, user_id_to_username)
 
-    @slash_command(description="Weekly fibit stats", guild_only=True)
+    @fitbot.command(name="leaderboard", description="Weekly fitbit stats")
     async def fitbot_leaderboard(self, ctx):
         guild_id = ctx.guild_id
         await ctx.defer()
