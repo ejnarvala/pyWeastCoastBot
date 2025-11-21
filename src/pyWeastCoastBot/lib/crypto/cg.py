@@ -1,4 +1,3 @@
-from datetime import datetime
 from functools import cached_property
 
 import pandas as pd
@@ -55,5 +54,5 @@ class CoinGeckoClient:
         params = dict(vs_currency="usd", days=1)
         chart_data = cg.get_coin_market_chart_by_id(coin_id, **params)
         df = pd.DataFrame(chart_data["prices"], columns=["time", "price"])
-        df["time"] = [datetime.utcfromtimestamp(ts / 1000).strftime("%Y-%m-%d %H:%M:%S") for ts in df["time"]]
+        df["time"] = pd.to_datetime(df["time"], unit="ms", utc=True)
         return generate_line_plot_image(df, x="time", y="price", labels=dict(time="Time", price="Price (USD)"))

@@ -8,7 +8,7 @@ from discord.ui import InputText, Modal, View, button
 from pyWeastCoastBot.lib.fitbot.service import FitbotService, GuildWeeklyStats
 from pyWeastCoastBot.utils.consts import HexColors
 from pyWeastCoastBot.utils.errors import InvalidParameter
-from pyWeastCoastBot.utils.graph import generate_line_plot, write_fig_to_tempfile
+from pyWeastCoastBot.utils.graph import generate_line_plot_image
 from pyWeastCoastBot.utils.types import hex_to_rgb
 
 
@@ -163,10 +163,18 @@ class WeeklyLeaderboardResponse:
     @property
     def image_file(self):
         df = self.guild_stats.steps_df
-        fig = generate_line_plot(df, x=df.index, y=list(df.columns))
-        fig.for_each_trace(lambda t: t.update(name=self.user_id_map.get(t.name, t.name)))
-        fig.update_layout(xaxis_title="Date", yaxis_title="Steps", legend_title="Users")
-        return File(write_fig_to_tempfile(fig), filename="image.png")
+        renamed_df = df.rename(columns=lambda c: self.user_id_map.get(str(c), str(c)))
+        return File(
+            generate_line_plot_image(
+                renamed_df,
+                x=renamed_df.index,
+                y=list(renamed_df.columns),
+                xlabel="Date",
+                ylabel="Steps",
+                legend_title="Users",
+            ),
+            filename="image.png",
+        )
 
     def to_embed(self):
         embed = Embed(title="Fitbit Leaderboard", description=self.description, color=self.color)

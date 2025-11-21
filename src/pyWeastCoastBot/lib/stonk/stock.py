@@ -67,8 +67,7 @@ class StockHistory:
     def price_graph_image(self):
         history = self._data
         price = (history["High"] + history["Low"]) / 2
-        time = [f"{time:%Y-%m-%d %H:%M:%S}" for time in history.index.to_pydatetime()]
-        df = pd.DataFrame(dict(price=price, time=time))
+        df = pd.DataFrame(dict(price=price, time=history.index))
         return generate_line_plot_image(df, x="time", y="price", labels=dict(time="Time", price="Price (USD)"))
 
     @staticmethod
