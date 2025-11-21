@@ -23,4 +23,3 @@
 **/values.dev.yaml
 **/*.example
 .venv
-README.md

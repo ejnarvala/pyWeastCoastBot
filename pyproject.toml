@@ -1,51 +1,55 @@
-[tool.black]
-line-length = 100
-target-version = ['py39']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
 [project]
 name = "pyweastcoastbot"
-version = "0.1.0"
+version = "0.2.0"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "black",
+    "aiosqlite",
+    "alembic",
+    "asyncpg",
     "dateparser",
-    "django (==3.2.24)",
-    "dj-database-url",
-    "flake8",
-    "fitbit (>=0.3.1)",
+    "fitbit>=0.3.1",
+    "greenlet",
     "humanize",
-    "numpy (>1.24.4)",
-    "kaleido (>=0.2.0)",
-    "pandas (>=2.3.3)",
-    "plotly (>=5.2.1)",
-    "py-cord (==2.5.0)",
-    "pycoingecko (>=2.2.0)",
+    "numpy>=1.24.4",
+    "kaleido",
+    "pandas>=2.3.3",
+    "plotly>=5.2.1",
+    "py-cord==2.5.0",
+    "pycoingecko>=2.2.0",
     "python-dateutil",
-    "psycopg2-binary (>=2.9.10)",
+    "python-dotenv",
     "requests",
+    "ruff",
+    "sqlmodel",
     "table2ascii",
     "yfinance"
 ]
 
+[project.scripts]
+pyweastcoastbot = "pyWeastCoastBot.bot.main:run"
+
 [tool.setuptools.packages.find]
-where = ["."]  
+where = ["src"]
 include = ["pyWeastCoastBot*"]
-exclude = ["db*", "lib*", "bot*", "domain*"]
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.alembic]
+script_location = "src/pyWeastCoastBot/db/migrations"
+prepend_sys_path = "."
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
