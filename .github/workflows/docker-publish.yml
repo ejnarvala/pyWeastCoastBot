@@ -52,7 +52,6 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Publish image summary
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           TAG="latest"
