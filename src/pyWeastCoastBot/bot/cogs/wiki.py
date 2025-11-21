@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from discord import Option, slash_command
 from discord.ext import commands
@@ -11,13 +13,12 @@ class Wiki(commands.Cog):
 
     @slash_command(description="Search for wikipedia links")
     async def wiki(self, ctx, search_text: Option(str, "Title search term")):
-        try:
-            link = self.search_wiki_articles(search_text)
-            if not link:
-                raise f"Sorry, couldn't find article for '{search_text}'"
-            await ctx.respond(link)
-        except Exception as error:
-            await ctx.respond(str(error.original), ephemeral=True)
+        await ctx.defer()
+        link = self.search_wiki_articles(search_text)
+        if not link:
+            await ctx.followup.send(f"Sorry, couldn't find article for '{search_text}'", ephemeral=True)
+            return
+        await ctx.followup.send(link)
 
     @classmethod
     def search_wiki_articles(cls, search_text):
@@ -28,6 +29,11 @@ class Wiki(commands.Cog):
             return link
         except IndexError:
             pass
+
+    @wiki.error
+    async def wiki_error(self, ctx, error):
+        logging.error(f"Wiki Error: {error}")
+        await ctx.followup.send(str(error.original), ephemeral=True)
 
 
 def setup(bot):

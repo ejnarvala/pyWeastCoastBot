@@ -1,0 +1,15 @@
+[Unit]
+Description=PyWeastCoastBot
+After=docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/opt/pyweastcoastbot
+ExecStart=/usr/bin/docker compose up
+ExecStop=/usr/bin/docker compose down
+Restart=always
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -24,9 +24,10 @@ class IMDB(commands.Cog):
     ):
         if not (title_search_text or imdb_id):
             raise InvalidParameter("title or IMDb ID required")
+        await ctx.defer()
         film = self.omdb_client.find_by_title_or_id(title=title_search_text, imdb_id=imdb_id, year=year)
         logging.info(f"Found IMDB entry for search title={title_search_text},imdb_id={imdb_id}, year={year}: {film}")
-        await ctx.respond(embed=self.embed_from_film(film))
+        await ctx.followup.send(embed=self.embed_from_film(film))
 
     @imdb.error
     async def imdb_error(self, ctx, error):

@@ -60,6 +60,8 @@ class Reminders(commands.Cog):
         time: Option(str, "Time (specify"),
         message: Option(str, "Optional message to send in reminder") = None,
     ):
+        await ctx.defer()
+        logging.info(f"Remind me called with time: {time}, message: {message}")
         reminder_datetime = parse_utc_datetime(time)
         if reminder_datetime < utc_now():
             raise Exception("Parsed time is in the past")
@@ -83,7 +85,7 @@ class Reminders(commands.Cog):
         if reminder.message:
             response_message += f"\n> {reminder.message}"
 
-        await ctx.respond(response_message)
+        await ctx.followup.send(response_message)
 
     @remind_me.error
     async def remindme_error(self, ctx, error):
