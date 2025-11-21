@@ -1,6 +1,0 @@
-services:
-  linter:
-    build: .
-    command: bash -c "black . && flake8 ."
-    volumes:
-      - .:/app

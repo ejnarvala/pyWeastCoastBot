@@ -1,0 +1,10 @@
+services:
+  bot:
+    build: .
+    env_file: .env
+    volumes:
+      - bot_data:/app/data
+    command: ["./bin/start.sh"]
+
+volumes:
+  bot_data:

@@ -1,0 +1,7 @@
+services:
+  linter:
+    build: .
+    command: bash -c "ruff check . && ruff format --check ."
+    volumes:
+      - .:/app
+      - /app/.venv

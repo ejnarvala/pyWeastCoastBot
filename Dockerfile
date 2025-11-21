@@ -1,25 +1,34 @@
-FROM python:3.12-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV UV_CACHE_DIR=/opt/.cache
-
-# Install UV
-RUN pip install uv
+# Use a Python image with uv pre-installed
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
 WORKDIR /app
 
-# Copy project files
-COPY pyproject.toml uv.lock /app/
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
 
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
 
-# Install dependencies
-RUN uv sync --frozen && rm -rf $UV_CACHE_DIR
+# Install the project's dependencies using the lockfile and settings
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
 
-COPY . .
-RUN chmod +x /app/bin/migrate-and-start.sh
+# Then, add the rest of the project source code and install it
+# Installing separately from its dependencies allows optimal layer caching
+ADD . /app
 
-ENV DJANGO_ALLOW_ASYNC_UNSAFE=true
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
+
+RUN chmod +x /app/bin/start.sh /app/bin/wait-for-it.sh
+RUN mkdir -p /app/data
+
+# Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["uv", "run", "python", "run_bot.py"]
+# Reset the entrypoint, don't invoke `uv`
+ENTRYPOINT []
+
+CMD ["/app/bin/start.sh"]

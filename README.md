@@ -2,84 +2,88 @@
 
 This project is the python version of WeastCoastBot because my friends are picky and don't like nodejs
 
-## Recent Updates
-- 🔄 **Migrated from Poetry to UV** for faster dependency management
-- 📈 **Updated yfinance** to latest version (0.2.65) for improved stock data
-- 🐳 **Updated Docker setup** to use UV for consistent environments
-- 🧹 **Cleaned up build artifacts** and improved .gitignore
+## Features
 
-# Getting Started
-## Requirements
-* Docker
-* [UV](https://github.com/astral-sh/uv) (for local Python development)
+- **Crypto**: Track cryptocurrency prices and charts via CoinGecko (`/crypto`).
+- **Stonk**: Track stock market data and charts via Yahoo Finance (`/stonk`).
+- **Fitbot**: Fitbit integration for tracking steps and active minutes with server leaderboards (`/fitbot_*`).
+- **IMDB**: Movie and TV show information search (`/imdb`).
+- **Reminders**: Set reminders for yourself or the channel (`/remind_me`).
+- **Wiki**: Quick Wikipedia search (`/wiki`).
+- **Ping**: Simple latency check (`/ping`).
 
+## Getting Started
 
-## Local Development
+### Requirements
+* [Docker](https://www.docker.com/) (Recommended)
+* [UV](https://github.com/astral-sh/uv) (For local Python development)
 
-### With Docker (Recommended)
-1. Create a `.env` file in `/bot` by copying `.env.example` and populating the variables with your values
-2. Start up the app by running `docker compose up --build`
-   * this will run db migrations and hot reload for any code changes
-3. Start coding!
-
-### With UV (Local Python Development)
-This project uses [UV](https://github.com/astral-sh/uv) for fast Python package management.
-
-1. Install UV if you haven't already:
+### Configuration
+1. Copy the example environment file:
    ```bash
-   # macOS/Linux
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   # or with brew
-   brew install uv
+   cp .env.example .env
    ```
+2. Fill in the required values in `.env`:
+   * `BOT_TOKEN`: Your Discord Bot Token.
+   * `OMDB_API_SECRET`: API key from OMDb.
+   * `FITBIT_CLIENT_ID` & `FITBIT_CLIENT_SECRET`: OAuth credentials from Fitbit (if using Fitbot).
+   * `DATABASE_URL`: Connection string for the database (default: SQLite).
 
-2. Install dependencies:
+## Running the Bot
+
+### Using Docker (Recommended)
+The easiest way to run the bot is with Docker Compose.
+
+```bash
+# Start the bot in development mode (with hot-reload)
+make dev
+
+# Start with Postgres instead of SQLite
+make dev-postgres
+```
+
+### Using UV (Local Python)
+If you prefer running the bot directly on your machine:
+
+1. Install dependencies:
    ```bash
    uv sync
    ```
 
-3. Run the bot locally:
+2. Start the bot (runs migrations):
    ```bash
-   # Set up your database URL first
-   export DATABASE_URL="sqlite:///local.db"
-   
-   # Run migrations
-   uv run python manage.py migrate
-   
-   # Start the bot
-   uv run python run_bot.py
+   make start
    ```
 
-4. Add new dependencies:
-   ```bash
-   uv add package-name
-   ```
+## Development
 
-5. Run tests or Django commands:
-   ```bash
-   uv run python manage.py check
-   uv run python manage.py shell
-   ```
+### Project Structure
+* `src/pyWeastCoastBot/bot`: Core bot logic and Cogs.
+* `src/pyWeastCoastBot/lib`: Domain-specific libraries (crypto, fitbot, etc.).
+* `src/pyWeastCoastBot/utils`: General utility functions.
+* `src/pyWeastCoastBot/db`: Database models and migrations.
 
-### Adding a Cog
-1. in `/bot/cogs` copy the cog template at `cog.py.example` and rename it to the command you'll be adding
-2. Add a method that is named your command and annotate the method with `@commands.command()`
-   * the parameters for this method will first be the discord context followed by command parameters
+### Commands
+A `Makefile` is provided for common tasks:
 
-More info here - [Discord Cogs](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html)
+* `make lint`: Run ruff for linting.
+* `make format`: Format code with ruff.
+* `make clean`: Clean up artifacts.
 
-### Troubleshooting
+### Database Migrations
+This project uses Alembic for migrations.
 
-**Docker issues:** Try a fresh build with
-```bash
-docker compose down -v
-docker compose up --build
-```
+* **Create a new migration** (after modifying models):
+  ```bash
+  make migrate-gen MSG="description_of_changes"
+  ```
 
-**UV issues:** Reset the virtual environment
-```bash
-rm -rf .venv
-uv sync
-```
+* **Apply migrations**:
+  ```bash
+  make migrate-up
+  ```
 
-**Python version issues:** UV will automatically download the right Python version if needed
+* **Downgrade migration**:
+  ```bash
+  make migrate-down
+  ```

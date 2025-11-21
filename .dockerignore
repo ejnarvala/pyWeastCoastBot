@@ -23,4 +23,12 @@
 **/values.dev.yaml
 **/*.example
 .venv
-README.md
+.github
+.idea
+.DS_Store
+*.sqlite3
+*.db
+Makefile
+build
+dist
+*.egg-info
