@@ -4,8 +4,6 @@ import django
 from pyWeastCoastBot import settings as app_settings
 
 import logging
-import threading
-from health_check import start_health_server
 
 bot = discord.Bot()
 
@@ -13,11 +11,7 @@ bot = discord.Bot()
 def run():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pyWeastCoastBot.settings")
     django.setup()
-    
-    # Start health check server in background thread
-    health_thread = threading.Thread(target=start_health_server, daemon=True)
-    health_thread.start()
-    
+
     load_cogs()
     bot.run(app_settings.BOT_TOKEN)
 
