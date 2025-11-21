@@ -5,9 +5,6 @@ services:
     volumes:
       - bot_data:/app/data
     command: ["./bin/start.sh"]
-    environment:
-      LOGGING_FORMAT_TIME_ENABLED: false
-      LOGGING_FORMAT_NAME_ENABLED: false
 
 volumes:
   bot_data:
