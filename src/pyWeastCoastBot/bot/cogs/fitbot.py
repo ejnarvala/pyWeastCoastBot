@@ -29,12 +29,12 @@ class Fitbot(commands.Cog):
     @fitbot.command(name="register", description="Instructions to authorize fitbot")
     async def fitbot_register(self, ctx):
         url = self.fitbot.auth_url()
-        description = f"""
-            1. Click on [this link]({url})
-            2. Check all permissions unless you potentially want to break stuff
-            3. Look at the url & copy the value for `code`
-            4. Click 'Submit Code'
-        """
+        description = (
+            f"1. Click on [this link]({url})\n"
+            f"2. Check all permissions unless you potentially want to break stuff\n"
+            f"3. Look at the url & copy the value for `code`\n"
+            f"4. Click 'Submit Code'"
+        )
         embed = Embed(
             title="Fitbot Registration",
             url=url,
@@ -111,8 +111,8 @@ class SubmitCodeModal(Modal):
 
     async def callback(self, interaction):
         code = self.children[0].value
-        user_id = interaction.message.author.id
-        guild_id = interaction.message.guild.id
+        user_id = interaction.user.id
+        guild_id = interaction.guild_id
 
         if await self.fitbot.is_user_registered(user_id, guild_id):
             raise InvalidParameter("You're already registered!")
