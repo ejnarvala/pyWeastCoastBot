@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+import pytz
 from discord import Colour, Embed, File, TextChannel
 from discord.commands import SlashCommandGroup
 from discord.ext import commands, tasks
@@ -68,7 +69,7 @@ class Fitbot(commands.Cog):
         response = await self._get_weekly_leaderboard_response(guild_id)
         await ctx.followup.send(embed=response.to_embed(), file=response.image_file)
 
-    @tasks.loop(time=datetime.time(19))
+    @tasks.loop(time=datetime.time(19, tzinfo=pytz.timezone("America/Los_Angeles")))
     async def post_leaderboard(self):
         logging.info("Posting fitbot leaderboards")
         guild_ids = await self.fitbot.get_registered_guild_ids()

@@ -1,14 +1,17 @@
+import asyncio
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from functools import cached_property
 
 import attr
 import pandas as pd
 from fitbit import Fitbit
+from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 from sqlmodel import select
 
 from pyWeastCoastBot.db.models import ThirdPartyAuth
-from pyWeastCoastBot.db.session import get_session
+from pyWeastCoastBot.db.session import async_session, get_session
 from pyWeastCoastBot.lib.fitbot.config import FitbotConfig
 
 
@@ -82,16 +85,31 @@ class FitbotService:
 
     @staticmethod
     async def get_authed_client(user_id=None, guild_id=None, auth=None):
+        """Create an authenticated Fitbit client for a user.
+        
+        Args:
+            user_id: Discord user ID (optional if auth provided)
+            guild_id: Discord guild ID (optional if auth provided)
+            auth: ThirdPartyAuth object (optional, will be fetched if not provided)
+            
+        Returns:
+            Fitbit: Authenticated Fitbit client with automatic token refresh
+        """
         auth = auth or await FitbotService.get_user_auth(user_id, guild_id)
-        # Note: FitbitTokenRefresher needs to be async aware or handled carefully
-        # For now, we'll wrap the refresh callback to run in sync but it might block
-        # Ideally refactor Fitbit client to be async or handle token refresh separately
+        
+        # Create token refresher with just the IDs (not the detached auth object)
+        # This avoids session detachment issues
         return Fitbit(
             FitbotConfig.client_id,
             FitbotConfig.client_secret,
             access_token=auth.access_token,
             refresh_token=auth.refresh_token,
-            refresh_cb=FitbitTokenRefresher(auth),
+            expires_at=int(auth.expires_at.timestamp()) if auth.expires_at else None,
+            refresh_cb=FitbitTokenRefresher(
+                user_id=auth.user_id,
+                guild_id=auth.guild_id,
+                provider=auth.provider,
+            ),
         )
 
     @classmethod
@@ -107,8 +125,18 @@ class FitbotService:
 
         user_stats = []
         for auth in user_auths:
-            stats = await cls.get_user_weekly_stats(auth)
-            user_stats.append(stats)
+            try:
+                stats = await cls.get_user_weekly_stats(auth)
+                user_stats.append(stats)
+            except InvalidGrantError as e:
+                logging.error(
+                    f"Invalid grant error for user {auth.user_id} in guild {guild_id}. "
+                    f"Refresh token may be expired. User needs to re-register. Error: {e}"
+                )
+                # Optionally, could delete the invalid auth here
+                # await cls.disconnect_user(auth.user_id, auth.guild_id)
+            except Exception as e:
+                logging.error(f"Error fetching stats for user {auth.user_id}: {e}", exc_info=True)
 
         return GuildWeeklyStats(user_stats)
 
@@ -250,14 +278,86 @@ class UserWeeklyStats:
 
 
 class FitbitTokenRefresher:
-    def __init__(self, auth):
-        self.auth = auth
+    """Handles token refresh callbacks from the sync Fitbit library.
+    
+    The Fitbit library calls this synchronously when tokens are refreshed.
+    We need to update the database, but we're in an async application.
+    """
+    
+    # Shared thread pool for all token refresh operations
+    _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="fitbit_token_refresh")
+    
+    def __init__(self, user_id: str, guild_id: str, provider: str):
+        """Store only the identifiers needed to update the database.
+        
+        Args:
+            user_id: Discord user ID
+            guild_id: Discord guild ID  
+            provider: Auth provider name (e.g., 'fitbit')
+        """
+        self.user_id = user_id
+        self.guild_id = guild_id
+        self.provider = provider
 
-    def __call__(self, new_token):
-        # NOTE: This is called by the sync Fitbit library.
-        # Ideally we should use an async DB call, but since this is a callback
-        # from a sync library, we might need a sync engine or a way to bridge it.
-        # For now, we are omitting the implementation or need to handle it carefully.
-        # A proper fix involves making the Fitbit client async or using run_sync.
-        # Given the complexity, we will log a warning for now.
-        logging.warning("Token refresh attempted but DB save not implemented for Async SQLModel yet.")
+    def __call__(self, new_token: dict):
+        """Called by Fitbit library when tokens are refreshed.
+        
+        This is called from a sync context, so we schedule the async update
+        in the background without blocking.
+        """
+        logging.info(f"Token refresh triggered for user {self.user_id}")
+        
+        # Schedule the update to run in the background
+        # We use asyncio.run_coroutine_threadsafe to safely schedule from sync code
+        try:
+            loop = asyncio.get_running_loop()
+            # Schedule the coroutine in the event loop from this thread
+            asyncio.run_coroutine_threadsafe(
+                self._update_token(new_token),
+                loop
+            )
+        except RuntimeError:
+            # No running loop - this shouldn't happen in a Discord bot,
+            # but log it if it does
+            logging.error(
+                f"No running event loop found when refreshing token for user {self.user_id}. "
+                "Token refresh will not be saved to database."
+            )
+
+    async def _update_token(self, new_token: dict):
+        """Update the auth token in the database.
+        
+        Args:
+            new_token: Token dict from Fitbit with access_token, refresh_token, expires_at
+        """
+        try:
+            async with async_session() as session:
+                # Fetch the current auth record
+                stmt = select(ThirdPartyAuth).where(
+                    ThirdPartyAuth.user_id == self.user_id,
+                    ThirdPartyAuth.provider == self.provider,
+                    ThirdPartyAuth.guild_id == self.guild_id,
+                )
+                result = await session.exec(stmt)
+                auth = result.first()
+
+                if auth:
+                    # Update the tokens
+                    auth.access_token = new_token["access_token"]
+                    auth.refresh_token = new_token["refresh_token"]
+                    auth.expires_at = datetime.fromtimestamp(new_token["expires_at"])
+                    
+                    session.add(auth)
+                    await session.commit()
+                    
+                    logging.info(f"Successfully updated tokens for user {self.user_id}")
+                else:
+                    logging.error(
+                        f"Could not find auth record for user {self.user_id} "
+                        f"in guild {self.guild_id} with provider {self.provider}"
+                    )
+        except Exception as e:
+            logging.error(
+                f"Failed to update token in database for user {self.user_id}: {e}",
+                exc_info=True
+            )
