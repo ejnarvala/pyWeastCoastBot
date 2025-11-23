@@ -79,7 +79,7 @@ class Fitbot(commands.Cog):
             channels = await guild.fetch_channels()
             logging.info(f"Guild id: {guild_id}, channels: {channels}")
             for channel in channels:
-                if isinstance(channel, TextChannel) and channel.name == "fitbot":
+                if isinstance(channel, TextChannel) and "fitbot" in channel.name:
                     logging.info(f"Posting to guild {guild.name}, channel {channel.name}")
                     response = await self._get_weekly_leaderboard_response(guild_id)
                     await channel.send(embed=response.to_embed(), file=response.image_file)
