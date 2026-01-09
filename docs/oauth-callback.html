@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Callback - pyWeastCoastBot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .code-container {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            word-break: break-all;
+            position: relative;
+        }
+
+        .code-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .code-value {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .copy-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .copy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .copy-button:active {
+            transform: translateY(0);
+        }
+
+        .copy-button.copied {
+            background: #4CAF50;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success-message {
+            color: #2e7d32;
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .instructions {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            text-align: left;
+        }
+
+        .instructions h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+            color: #666;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .loading {
+            color: #666;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 OAuth Authorization</h1>
+        <p class="subtitle">pyWeastCoastBot</p>
+
+        <div id="loading" class="loading">
+            Loading authorization code...
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <div id="codeSection" style="display: none;">
+            <div class="code-container">
+                <div class="code-label">Authorization Code</div>
+                <div class="code-value" id="authCode"></div>
+            </div>
+            <button class="copy-button" id="copyButton">
+                📋 Copy to Clipboard
+            </button>
+        </div>
+
+        <div class="instructions">
+            <h2>Next Steps:</h2>
+            <ol>
+                <li>Click the "Copy to Clipboard" button above to copy your authorization code</li>
+                <li>Return to Discord and paste the code when prompted</li>
+                <li>Complete the registration process in Discord</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Extract code from URL parameters
+        function getCodeFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('code');
+        }
+
+        // Display the code
+        function displayCode() {
+            const code = getCodeFromURL();
+            const loading = document.getElementById('loading');
+            const codeSection = document.getElementById('codeSection');
+            const authCodeElement = document.getElementById('authCode');
+            const errorMessage = document.getElementById('errorMessage');
+
+            loading.style.display = 'none';
+
+            if (code) {
+                authCodeElement.textContent = code;
+                codeSection.style.display = 'block';
+            } else {
+                errorMessage.textContent = 'No authorization code found in URL. Please try the authorization process again.';
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        // Copy code to clipboard
+        async function copyToClipboard() {
+            const code = getCodeFromURL();
+            const copyButton = document.getElementById('copyButton');
+            const successMessage = document.getElementById('successMessage');
+
+            try {
+                await navigator.clipboard.writeText(code);
+                
+                // Update button state
+                copyButton.textContent = '✓ Copied!';
+                copyButton.classList.add('copied');
+                
+                // Show success message
+                successMessage.textContent = 'Code copied to clipboard! You can now paste it in Discord.';
+                successMessage.style.display = 'block';
+
+                // Reset button after 3 seconds
+                setTimeout(() => {
+                    copyButton.textContent = '📋 Copy to Clipboard';
+                    copyButton.classList.remove('copied');
+                }, 3000);
+            } catch (err) {
+                // Fallback for older browsers
+                fallbackCopyToClipboard(code);
+            }
+        }
+
+        // Fallback copy method for older browsers
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                const copyButton = document.getElementById('copyButton');
+                const successMessage = document.getElementById('successMessage');
+                
+                copyButton.textContent = '✓ Copied!';
+                copyButton.classList.add('copied');
+                successMessage.textContent = 'Code copied to clipboard! You can now paste it in Discord.';
+                successMessage.style.display = 'block';
+                
+                setTimeout(() => {
+                    copyButton.textContent = '📋 Copy to Clipboard';
+                    copyButton.classList.remove('copied');
+                }, 3000);
+            } catch (err) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = 'Failed to copy code. Please manually select and copy the code above.';
+                errorMessage.style.display = 'block';
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            displayCode();
+            
+            // Add click event to copy button
+            const copyButton = document.getElementById('copyButton');
+            if (copyButton) {
+                copyButton.addEventListener('click', copyToClipboard);
+            }
+        });
+    </script>
+</body>
+</html>
