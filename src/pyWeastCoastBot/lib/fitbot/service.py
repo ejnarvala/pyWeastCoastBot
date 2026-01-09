@@ -26,7 +26,7 @@ class FitbotService:
     @classmethod
     def auth_url(cls):
         url, _ = cls.unauth_fitbit.client.authorize_token_url(
-            scope=cls.config.scope, redirect_uri="http://localhost/callback"
+            scope=cls.config.scope, redirect_uri="https://ejnarvala.github.io/pyWeastCoastBot/oauth-callback.html"
         )
         return url
 
