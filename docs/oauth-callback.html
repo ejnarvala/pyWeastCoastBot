@@ -233,6 +233,7 @@
         }
 
         // Fallback copy method for older browsers
+        // Note: Uses deprecated execCommand('copy') for legacy browser support
         function fallbackCopyToClipboard(text) {
             const textArea = document.createElement('textarea');
             textArea.value = text;
@@ -242,6 +243,7 @@
             textArea.select();
             
             try {
+                // execCommand is deprecated but needed for older browsers
                 document.execCommand('copy');
                 const copyButton = document.getElementById('copyButton');
                 const successMessage = document.getElementById('successMessage');
@@ -259,9 +261,10 @@
                 const errorMessage = document.getElementById('errorMessage');
                 errorMessage.textContent = 'Failed to copy code. Please manually select and copy the code above.';
                 errorMessage.style.display = 'block';
+            } finally {
+                // Ensure cleanup happens even if an error occurs
+                document.body.removeChild(textArea);
             }
-            
-            document.body.removeChild(textArea);
         }
 
         // Initialize on page load
