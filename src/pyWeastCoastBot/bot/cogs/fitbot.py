@@ -31,8 +31,9 @@ class Fitbot(commands.Cog):
         description = (
             f"1. Click on [this link]({url})\n"
             f"2. Check all permissions unless you potentially want to break stuff\n"
-            f"3. Look at the url & copy the value for `code`\n"
-            f"4. Click 'Submit Code'"
+            f"3. You'll be redirected to a page showing your authorization code\n"
+            f"4. Click 'Copy to Clipboard' on that page\n"
+            f"5. Return here and click 'Submit Code' below"
         )
         embed = Embed(
             title="Fitbot Registration",
