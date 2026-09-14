@@ -45,7 +45,8 @@ class EmbedFix(commands.Cog):
         except discord.Forbidden:
             pass
 
-        await ctx.followup.send("Fixed ✅", ephemeral=True)
+        # The reply is the confirmation, so clear the (ephemeral) "thinking" state.
+        await ctx.delete()
 
     @fixembed.error
     async def fixembed_error(self, ctx, error):
