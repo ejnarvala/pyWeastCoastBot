@@ -10,7 +10,19 @@ from pyWeastCoastBot.utils.consts import HexColors
 plt.switch_backend("Agg")
 
 
-def generate_line_plot(df, x, y, xlabel=None, ylabel=None, legend_title=None, labels=None):
+def generate_line_plot(
+    df,
+    x,
+    y,
+    xlabel=None,
+    ylabel=None,
+    legend_title=None,
+    labels=None,
+    show_markers=False,
+    show_y_grid=False,
+    date_format=None,
+    convert_timezone=True,
+):
     """
     Generates a matplotlib figure for a line plot.
 
@@ -22,6 +34,10 @@ def generate_line_plot(df, x, y, xlabel=None, ylabel=None, legend_title=None, la
         ylabel: Label for y-axis.
         legend_title: Title for the legend.
         labels: Dict for mapping column names to labels (compatibility with plotly).
+        show_markers: Whether to mark each observed data point.
+        show_y_grid: Whether to show subtle horizontal gridlines.
+        date_format: Optional explicit date tick format.
+        convert_timezone: Whether to convert datetime data to US Eastern time.
     """
     if labels is None:
         labels = {}
@@ -59,7 +75,7 @@ def generate_line_plot(df, x, y, xlabel=None, ylabel=None, legend_title=None, la
         pass
 
     # Convert to US Eastern timezone if datetime data
-    if hasattr(x_data, "dtype") and pd.api.types.is_datetime64_any_dtype(x_data):
+    if convert_timezone and hasattr(x_data, "dtype") and pd.api.types.is_datetime64_any_dtype(x_data):
         # If timezone-naive, assume UTC then convert
         try:
             if not hasattr(x_data.dtype, "tz") or x_data.dtype.tz is None:
@@ -71,19 +87,27 @@ def generate_line_plot(df, x, y, xlabel=None, ylabel=None, legend_title=None, la
             # If timezone conversion fails, keep original data
             pass
 
+    plot_options = {"linewidth": 2.5}
+    if show_markers:
+        plot_options.update(marker="o", markersize=4.5, markeredgewidth=0)
+
     # Plotting
     if isinstance(y, list):
         for col in y:
             # Get label from labels dict if available, else col name
             label = labels.get(col, col)
-            ax.plot(x_data, df[col], label=label, linewidth=3)
+            ax.plot(x_data, df[col], label=label, **plot_options)
     else:
         label = labels.get(y, y)
-        ax.plot(x_data, df[y], label=label, linewidth=3)
+        ax.plot(x_data, df[y], label=label, **plot_options)
 
     # Styling
     for spine in ax.spines.values():
         spine.set_color(text_color)
+
+    if show_y_grid:
+        ax.set_axisbelow(True)
+        ax.grid(axis="y", color=text_color, alpha=0.16, linewidth=0.8)
 
     ax.tick_params(axis="x", colors=text_color, labelcolor=text_color, labelsize=14)
     ax.tick_params(axis="y", colors=text_color, labelcolor=text_color, labelsize=14)
@@ -112,8 +136,10 @@ def generate_line_plot(df, x, y, xlabel=None, ylabel=None, legend_title=None, la
         if hasattr(x_data, "dtype") and hasattr(x_data.dtype, "tz"):
             tz = x_data.dtype.tz
 
-        locator = mdates.AutoDateLocator(tz=tz)
-        formatter = mdates.ConciseDateFormatter(locator, tz=tz)
+        locator = mdates.DayLocator(interval=1, tz=tz) if date_format else mdates.AutoDateLocator(tz=tz)
+        formatter = (
+            mdates.DateFormatter(date_format, tz=tz) if date_format else mdates.ConciseDateFormatter(locator, tz=tz)
+        )
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
 

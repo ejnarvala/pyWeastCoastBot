@@ -2,6 +2,8 @@ services:
   bot:
     build: .
     env_file: .env
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////app/data/db.sqlite3
     volumes:
       - bot_data:/app/data
     command: ["./bin/start.sh"]

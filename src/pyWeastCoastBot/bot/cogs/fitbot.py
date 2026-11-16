@@ -8,7 +8,6 @@ from discord.ui import InputText, Modal, View, button
 
 from pyWeastCoastBot.lib.fitbot.service import FitbotService, GuildWeeklyStats
 from pyWeastCoastBot.utils.consts import HexColors
-from pyWeastCoastBot.utils.errors import InvalidParameter
 from pyWeastCoastBot.utils.graph import generate_line_plot_image
 from pyWeastCoastBot.utils.types import hex_to_rgb
 
@@ -23,17 +22,18 @@ class Fitbot(commands.Cog):
     def cog_unload(self):
         self.post_leaderboard.cancel()
 
-    fitbot = SlashCommandGroup("fitbot", "Fitbit integration commands", guild_only=True)
+    fitbot = SlashCommandGroup("fitbot", "Google Health integration commands", guild_only=True)
 
     @fitbot.command(name="register", description="Instructions to authorize fitbot")
     async def fitbot_register(self, ctx):
-        url = self.fitbot.auth_url()
+        url = self.fitbot.auth_url(ctx.author.id, ctx.guild_id)
         description = (
-            f"1. Click on [this link]({url})\n"
-            f"2. Check all permissions unless you potentially want to break stuff\n"
+            f"1. Link or migrate your Fitbit account in the Google Health app\n"
+            f"2. Click on [this link]({url}) and grant activity and fitness access\n"
             f"3. You'll be redirected to a page showing your authorization code\n"
             f"4. Click 'Copy to Clipboard' on that page\n"
-            f"5. Return here and click 'Submit Code' below"
+            f"5. Return here and click 'Submit Code' below\n"
+            f"Your activity data may appear in this server's Fitbot leaderboard."
         )
         embed = Embed(
             title="Fitbot Registration",
@@ -62,7 +62,7 @@ class Fitbot(commands.Cog):
                 user_id_to_username[user_id] = user.display_name
         return WeeklyLeaderboardResponse(stats, user_id_to_username)
 
-    @fitbot.command(name="leaderboard", description="Weekly fitbit stats")
+    @fitbot.command(name="leaderboard", description="Weekly Google Health activity stats")
     async def fitbot_leaderboard(self, ctx):
         guild_id = ctx.guild_id
         await ctx.defer()
@@ -114,9 +114,6 @@ class SubmitCodeModal(Modal):
         user_id = interaction.user.id
         guild_id = interaction.guild_id
 
-        if await self.fitbot.is_user_registered(user_id, guild_id):
-            raise InvalidParameter("You're already registered!")
-
         await self.fitbot.store_auth_token(user_id, guild_id, code)
 
         await interaction.response.send_message("You've been successfully registered", ephemeral=True)
@@ -138,33 +135,29 @@ class WeeklyLeaderboardResponse:
     @property
     def description(self):
         if not self.guild_stats.user_ids:
-            return "This server has no registered fitbit accounts"
+            return "This server has no registered Google Health accounts"
 
-        am_lb = self.guild_stats.weekly_active_minutes_leaderboard
         description = "**Weekly Active Minutes**"
-        for idx, lb_entry in enumerate(am_lb, start=1):
-            description += f"\n{idx}. <@!{lb_entry.user_id}>: {lb_entry.score}"
+        for index, entry in enumerate(self.guild_stats.weekly_active_minutes_leaderboard, start=1):
+            description += f"\n{index}. <@!{entry.user_id}>: {entry.score}"
 
-        weekly_steps_lb = self.guild_stats.weekly_steps_leaderboard
         description += "\n\n**Weekly Steps**"
-        for idx, lb_entry in enumerate(weekly_steps_lb, start=1):
-            description += f"\n{idx}. <@!{lb_entry.user_id}>: {lb_entry.score}"
+        for index, entry in enumerate(self.guild_stats.weekly_steps_leaderboard, start=1):
+            description += f"\n{index}. <@!{entry.user_id}>: {entry.score}"
 
-        last_day_steps_lb = self.guild_stats.last_day_steps_leaderboard
         description += "\n\n**Last Day Steps**"
-        for idx, lb_entry in enumerate(last_day_steps_lb, start=1):
-            description += f"\n{idx}. <@!{lb_entry.user_id}>: {lb_entry.score}"
-
+        for index, entry in enumerate(self.guild_stats.last_day_steps_leaderboard, start=1):
+            description += f"\n{index}. <@!{entry.user_id}>: {entry.score}"
         return description
 
     @property
     def thumbnail_image_url(self):
-        return "https://icon-library.com/images/fitbit-icon/fitbit-icon-20.jpg"
+        return "https://img.icons8.com/color/96/fitbit.png"
 
     @property
     def image_file(self):
         df = self.guild_stats.steps_df
-        renamed_df = df.rename(columns=lambda c: self.user_id_map.get(str(c), str(c)))
+        renamed_df = df.rename(columns=lambda column: self.user_id_map.get(str(column), str(column)))
         return File(
             generate_line_plot_image(
                 renamed_df,
@@ -173,12 +166,16 @@ class WeeklyLeaderboardResponse:
                 xlabel="Date",
                 ylabel="Steps",
                 legend_title="Users",
+                show_markers=True,
+                show_y_grid=True,
+                date_format="%b %d",
+                convert_timezone=False,
             ),
             filename="image.png",
         )
 
     def to_embed(self):
-        embed = Embed(title="Fitbit Leaderboard", description=self.description, color=self.color)
+        embed = Embed(title="FitBot Leaderboard", description=self.description, color=self.color)
         embed.set_thumbnail(url=self.thumbnail_image_url)
         embed.set_image(url="attachment://image.png")
         return embed

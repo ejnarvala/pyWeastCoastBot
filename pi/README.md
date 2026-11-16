@@ -96,6 +96,8 @@ sudo systemctl stop pyweastcoastbot
 ### Notes
 
 - The deployment uses `compose.rpi.yml` which includes the bot and Watchtower for automatic updates
+- When `DATABASE_URL` is unset, SQLite is stored at `/app/data/db.sqlite3` in the persistent `bot_data` volume. If you set `DATABASE_URL`, ensure it points to persistent storage; a relative SQLite URL such as `sqlite+aiosqlite:///db.sqlite3` may point to the container's writable layer instead.
+- PostgreSQL remains available as an optional deployment through `compose.postgres.yml`.
 - The systemd service (`pyweastcoastbot.service`) manages the Docker Compose stack
 - Logs are available via journald and Docker logging
 - Compatible with 64-bit Raspberry Pi OS; ARMv7 images work on Pi Zero 2 W

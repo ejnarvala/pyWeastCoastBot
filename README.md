@@ -6,7 +6,7 @@ This project is the python version of WeastCoastBot because my friends are picky
 
 - **Crypto**: Track cryptocurrency prices and charts via CoinGecko (`/crypto`).
 - **Stonk**: Track stock market data and charts via Yahoo Finance (`/stonk`).
-- **Fitbot**: Fitbit integration for tracking steps and active minutes with server leaderboards (`/fitbot_*`).
+- **Fitbot**: Google Health integration for steps and active minutes with server leaderboards (`/fitbot_*`).
 - **IMDB**: Movie and TV show information search (`/imdb`).
 - **Reminders**: Set reminders for yourself or the channel (`/remind_me`).
 - **Wiki**: Quick Wikipedia search (`/wiki`).
@@ -26,7 +26,7 @@ This project is the python version of WeastCoastBot because my friends are picky
 2. Fill in the required values in `.env`:
    * `BOT_TOKEN`: Your Discord Bot Token.
    * `OMDB_API_SECRET`: API key from OMDb.
-   * `FITBIT_CLIENT_ID` & `FITBIT_CLIENT_SECRET`: OAuth credentials from Fitbit (if using Fitbot).
+   * `GOOGLE_HEALTH_CLIENT_ID` & `GOOGLE_HEALTH_CLIENT_SECRET`: OAuth credentials from Google Cloud (if using Fitbot).
    * `DATABASE_URL`: Connection string for the database (default: SQLite).
 
 ## Running the Bot
