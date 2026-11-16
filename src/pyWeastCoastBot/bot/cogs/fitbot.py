@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from discord import Colour, Embed, File, TextChannel
+from discord import Colour, Embed, File
 from discord.commands import SlashCommandGroup
 from discord.ext import commands, tasks
 from discord.ui import InputText, Modal, View, button
@@ -75,14 +75,20 @@ class Fitbot(commands.Cog):
         guild_ids = await self.fitbot.get_registered_guild_ids()
         logging.info(f"Guild ids: {guild_ids}")
         for guild_id in guild_ids:
-            guild = await self.bot.fetch_guild(int(guild_id))
-            channels = await guild.fetch_channels()
-            logging.info(f"Guild id: {guild_id}, channels: {channels}")
+            guild = self.bot.get_guild(int(guild_id))
+            if guild is None:
+                logging.warning(f"Skipping Fitbot leaderboard for uncached guild {guild_id}")
+                continue
+
+            channels = [channel for channel in guild.text_channels if "fitbot" in channel.name]
+            if not channels:
+                logging.error(f"No compatible Fitbot text channel found for guild {guild_id}")
+                continue
+
             for channel in channels:
-                if isinstance(channel, TextChannel) and "fitbot" in channel.name:
-                    logging.info(f"Posting to guild {guild.name}, channel {channel.name}")
-                    response = await self._get_weekly_leaderboard_response(guild_id)
-                    await channel.send(embed=response.to_embed(), file=response.image_file)
+                logging.info(f"Posting to guild {guild.name}, channel {channel.name}")
+                response = await self._get_weekly_leaderboard_response(guild_id)
+                await channel.send(embed=response.to_embed(), file=response.image_file)
 
     @post_leaderboard.before_loop
     async def before_poll(self):
